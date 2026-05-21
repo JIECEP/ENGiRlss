@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 import ConfirmModal from '../../components/ConfirmModal';
 import { useDropzone } from 'react-dropzone';
+import { useAuth } from '../../context/AuthContext';
 
 // Preview Modal for Email Templates
 function EmailPreviewModal({ template, onClose }) {
@@ -40,7 +41,7 @@ function ConfigModal({ template, onClose, onSave, saving }) {
     <div className="modal-overlay">
       <div className="modal-box" style={{ maxWidth: 700 }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'1rem' }}>
-          <h3 style={{ fontWeight:700, color:'#f1f5f9' }}>{template?._id ? 'Edit Template' : 'Upload Email Template'}</h3>
+          <h3 style={{ fontWeight:700, color:'#f1f5f9' }}>{template?._id ? 'Edit Template' : 'Create Email Template'}</h3>
           <button onClick={onClose} style={{ background:'none', border:'none', cursor:'pointer', color:'#64748b' }}><X size={20} /></button>
         </div>
 
@@ -62,7 +63,7 @@ function ConfigModal({ template, onClose, onSave, saving }) {
         <div style={{ display:'flex', justifyContent:'flex-end', gap:'1rem', marginTop:'1.5rem' }}>
           <button className="btn-secondary" onClick={onClose}>Cancel</button>
           <button className="btn-primary" onClick={() => onSave(name, subject, body)}>
-            {template?._id ? 'Update' : 'Upload and Save'}
+            {template?._id ? 'Update' : 'Save'}
           </button>
         </div>
       </div>
@@ -71,6 +72,7 @@ function ConfigModal({ template, onClose, onSave, saving }) {
 }
 
 export default function EmailTemplatesPage() {
+  const { user } = useAuth();
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingTemplate, setEditingTemplate] = useState(null);
@@ -113,9 +115,16 @@ export default function EmailTemplatesPage() {
     try {
       await api.delete(`/email-templates/${templateToDelete._id}`);
       toast.success('Template deleted.');
+    } catch (err) {
+      if (err.response?.status === 404) {
+        toast.success('Template already deleted.');
+      } else {
+        toast.error('Failed to delete template');
+      }
+    } finally {
       fetchTemplates();
-    } catch { toast.error('Failed to delete template'); }
-    finally { setTemplateToDelete(null); }
+      setTemplateToDelete(null);
+    }
   };
 
   const onDrop = useCallback((acceptedFiles) => {
@@ -152,38 +161,41 @@ export default function EmailTemplatesPage() {
   return (
     <DashboardLayout title="Email Templates" subtitle="Manage templates for sending certificates">
       
-      {/* Upload area at the Top */}
-      <div className="glass" style={{ borderRadius:16, padding:'1.5rem', marginBottom:'1.5rem' }}>
-        <div style={{ display:'flex', alignItems:'center', gap:'0.5rem', marginBottom:'1.25rem' }}>
-          <Upload size={18} color="#6366f1" />
-          <span style={{ fontWeight:600, color:'#f1f5f9' }}>Upload New Template</span>
-        </div>
-
-        <div {...getRootProps()} className={`dropzone ${isDragActive ? 'active' : ''}`} 
-          style={{ 
-            padding: '2rem', 
-            border: '2px dashed rgba(99,102,241,0.3)', 
-            borderRadius: 12, 
-            textAlign: 'center', 
-            cursor: 'pointer',
-            background: isDragActive ? 'rgba(99,102,241,0.1)' : 'transparent',
-            transition: 'background 0.2s'
-          }}>
+      {user?.role === 'supervisor' && (
+        <div {...getRootProps()} style={{
+          border: '2px dashed rgba(99, 102, 241, 0.3)',
+          borderRadius: 16,
+          padding: '2rem',
+          textAlign: 'center',
+          cursor: 'pointer',
+          background: isDragActive ? 'rgba(99, 102, 241, 0.1)' : 'transparent',
+          marginBottom: '1.5rem',
+          transition: 'background 0.2s'
+        }}>
           <input {...getInputProps()} />
-          <FileText size={40} color="#6366f1" style={{ margin: '0 auto 1rem', opacity: 0.7 }} />
-          <div style={{ color: '#e2e8f0', fontWeight: 500, marginBottom: '0.375rem' }}>
-            {isDragActive ? 'Drop the file here...' : 'Drag & drop an HTML or TXT file here'}
-          </div>
-          <div style={{ color: '#64748b', fontSize: '0.8125rem' }}>or click to browse — will populate the form below</div>
+          <Upload size={40} color="#6366f1" style={{ margin: '0 auto 1rem', opacity: 0.7 }} />
+          <p style={{ color: '#e2e8f0', fontWeight: 500 }}>
+            {isDragActive ? 'Drop the file here' : 'Drag & drop an email template (.html or .txt) here, or click to browse'}
+          </p>
+          <p style={{ color: '#64748b', fontSize: '0.875rem', marginTop: '0.5rem' }}>
+            Supports HTML and plain text files
+          </p>
         </div>
-      </div>
+      )}
+      
+
 
       {/* Templates List at the Bottom */}
       <div className="glass" style={{ borderRadius:16, padding:'1.5rem' }}>
-        <div style={{ display:'flex', alignItems:'center', gap:'0.5rem', marginBottom:'1.25rem' }}>
-          <Mail size={18} color="#6366f1" />
-          <span style={{ fontWeight:600, color:'#f1f5f9' }}>Uploaded Templates</span>
-          <span className="badge badge-primary" style={{ marginLeft:'0.25rem' }}>{templates.length}</span>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'1.25rem' }}>
+          <div style={{ display:'flex', alignItems:'center', gap:'0.5rem' }}>
+            <Mail size={18} color="#6366f1" />
+            <span style={{ fontWeight:600, color:'#f1f5f9' }}>Email Templates</span>
+            <span className="badge badge-primary" style={{ marginLeft:'0.25rem' }}>{templates.length}</span>
+          </div>
+          <button className="btn-primary" onClick={() => setEditingTemplate({ name: '', subject: '', body: '' })}>
+            Create Template
+          </button>
         </div>
 
         {loading ? (
@@ -211,6 +223,9 @@ export default function EmailTemplatesPage() {
                     </div>
                   </div>
                   <div style={{ color:'#94a3b8', fontSize:'0.8125rem', marginBottom:'0.5rem' }}><strong>Subject:</strong> {tmpl.subject || 'No Subject'}</div>
+                  {tmpl.createdBy && (
+                    <div style={{ color:'#94a3b8', fontSize:'0.8125rem', marginBottom:'0.5rem' }}><strong>Created By:</strong> {tmpl.createdBy.name || 'System'}</div>
+                  )}
                   <div style={{ color:'#64748b', fontSize:'0.8125rem', maxHeight:60, overflow:'hidden', textOverflow:'ellipsis' }}>
                     {(tmpl.body || '').replace(/<[^>]*>?/gm, '').substring(0, 100)}...
                   </div>

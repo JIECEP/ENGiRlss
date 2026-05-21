@@ -292,8 +292,11 @@ export default function TemplatesPage() {
                   </div>
                 </div>
                 <div style={{ padding:'0.875rem' }}>
-                  <div style={{ fontWeight:500, color:'#e2e8f0', fontSize:'0.875rem', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', marginBottom:'0.25rem' }}>
+                  <div style={{ fontWeight:500, color:'#e2e8f0', fontSize:'0.875rem', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', marginBottom:'0.375rem' }}>
                     {tmpl.originalName}
+                  </div>
+                  <div style={{ fontSize:'0.75rem', color:'#94a3b8', marginBottom:'0.5rem' }}>
+                    By: <span style={{ fontWeight:500, color:'#f1f5f9' }}>{tmpl.uploadedBy?.name || 'System'}</span>
                   </div>
                   <div style={{ fontSize:'0.75rem', color:'#64748b', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
                     <span>{format(new Date(tmpl.createdAt), 'MMM d, yyyy')}</span>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import api from '../../services/api';
-import { Users, Plus, Trash2, ToggleLeft, ToggleRight, AlertCircle, X, Mail, User, Lock } from 'lucide-react';
+import { Users, Plus, Trash2, ToggleLeft, ToggleRight, AlertCircle, X, Mail, User, Lock, Folder } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 import ConfirmModal from '../../components/ConfirmModal';
@@ -21,9 +21,10 @@ function Modal({ onClose, children }) {
 
 export default function SupervisorsPage() {
   const [supervisors, setSupervisors] = useState([]);
+  const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [form, setForm] = useState({ name:'', email:'', password:'' });
+  const [form, setForm] = useState({ name:'', email:'', password:'', project:'' });
   const [submitting, setSubmitting] = useState(false);
   const [supervisorToDelete, setSupervisorToDelete] = useState(null);
 
@@ -35,7 +36,19 @@ export default function SupervisorsPage() {
     finally { setLoading(false); }
   };
 
-  useEffect(() => { fetchSupervisors(); }, []);
+  const fetchProjects = async () => {
+    try {
+      const { data } = await api.get('/projects');
+      setProjects(data.projects || []);
+    } catch {
+      toast.error('Failed to load projects');
+    }
+  };
+
+  useEffect(() => {
+    fetchSupervisors();
+    fetchProjects();
+  }, []);
 
   const handleCreate = async (e) => {
     e.preventDefault();
@@ -44,7 +57,7 @@ export default function SupervisorsPage() {
       await api.post('/users/supervisor', form);
       toast.success('Supervisor created successfully!');
       setShowModal(false);
-      setForm({ name:'', email:'', password:'' });
+      setForm({ name:'', email:'', password:'', project:'' });
       fetchSupervisors();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to create supervisor');
@@ -98,6 +111,7 @@ export default function SupervisorsPage() {
                 <tr>
                   <th>Name</th>
                   <th>Email</th>
+                  <th>Project</th>
                   <th>Status</th>
                   <th>Joined</th>
                   <th>Actions</th>
@@ -112,12 +126,29 @@ export default function SupervisorsPage() {
                           width:34, height:34, borderRadius:'50%', flexShrink:0,
                           background:'linear-gradient(135deg,#10b981,#059669)',
                           display:'flex', alignItems:'center', justifyContent:'center',
-                          fontWeight:700, fontSize:'0.875rem', color:'white'
-                        }}>{sv.name[0].toUpperCase()}</div>
+                          fontWeight:700, fontSize:'0.875rem', color:'white',
+                          overflow: 'hidden'
+                        }}>
+                          {sv.avatar ? (
+                            <img src={`/uploads/avatars/${sv.avatar}`} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          ) : (
+                            sv.name[0].toUpperCase()
+                          )}
+                        </div>
                         <span style={{ fontWeight:500, color:'#e2e8f0' }}>{sv.name}</span>
                       </div>
                     </td>
                     <td style={{ color:'#94a3b8' }}>{sv.email}</td>
+                    <td>
+                      {sv.project ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', color: '#818cf8', fontWeight: 500 }}>
+                          <Folder size={14} />
+                          <span>{sv.project.name}</span>
+                        </div>
+                      ) : (
+                        <span style={{ color: '#64748b', fontStyle: 'italic', fontSize: '0.8125rem' }}>No Project</span>
+                      )}
+                    </td>
                     <td>
                       <span className={`badge ${sv.isActive ? 'badge-success' : 'badge-danger'}`}>
                         {sv.isActive ? 'Active' : 'Inactive'}
@@ -162,6 +193,25 @@ export default function SupervisorsPage() {
                 <Mail size={15} style={{ position:'absolute', left:'0.875rem', top:'50%', transform:'translateY(-50%)', color:'#475569' }} />
                 <input className="input-field" type="email" style={{ paddingLeft:'2.5rem' }} placeholder="supervisor@example.com"
                   value={form.email} onChange={e => setForm({...form, email:e.target.value})} required />
+              </div>
+            </div>
+            <div style={{ marginBottom:'1rem' }}>
+              <label className="label">Assign Project (Optional)</label>
+              <div style={{ position:'relative' }}>
+                <Folder size={15} style={{ position:'absolute', left:'0.875rem', top:'50%', transform:'translateY(-50%)', color:'#475569' }} />
+                <select 
+                  className="input-field" 
+                  style={{ paddingLeft:'2.5rem', background: 'rgba(15, 23, 42, 0.8)', color: '#cbd5e1' }}
+                  value={form.project} 
+                  onChange={e => setForm({...form, project:e.target.value})}
+                >
+                  <option value="" style={{ background: '#1e293b', color: '#cbd5e1' }}>None (No Project)</option>
+                  {projects.map(proj => (
+                    <option key={proj._id} value={proj._id} style={{ background: '#1e293b', color: '#cbd5e1' }}>
+                      {proj.name}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
             <div style={{ marginBottom:'1.5rem' }}>

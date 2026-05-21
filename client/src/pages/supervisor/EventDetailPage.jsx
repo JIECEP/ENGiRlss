@@ -9,6 +9,7 @@ import {
   ArrowLeft, CalendarDays, Image as ImageIcon, Upload, Users, FileText,
   Eye, Mail, CheckCircle, Clock, X, Download, ChevronRight, ChevronLeft, AlertCircle
 } from 'lucide-react';
+import PreviewModal from '../../components/PreviewModal';
 
 const STEPS = [
   { key: 'info', label: 'Event Info', icon: CalendarDays },
@@ -357,6 +358,8 @@ function StepGenerate({ event, participants, generatedIds, setGeneratedIds, gene
 function StepPreview({ event, generatedIds }) {
   const [certs, setCerts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   useEffect(() => {
     if (!event?._id) return;
@@ -373,6 +376,23 @@ function StepPreview({ event, generatedIds }) {
       const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
       window.URL.revokeObjectURL(url);
     } catch { toast.error('Download failed'); }
+  };
+
+  const handlePreview = async (certId) => {
+    try {
+      const r = await api.get(`/certificates/download/${certId}`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([r.data], { type: 'application/pdf' }));
+      setPreviewUrl(url);
+      setIsPreviewOpen(true);
+    } catch { toast.error('Preview failed'); }
+  };
+
+  const closePreview = () => {
+    setIsPreviewOpen(false);
+    if (previewUrl) {
+      window.URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+    }
   };
 
   return (
@@ -406,16 +426,25 @@ function StepPreview({ event, generatedIds }) {
                   : <span className="badge badge-warning"><Clock size={11} /> Pending</span>}
                 </td>
                 <td>
-                  <button className="btn-secondary" style={{ padding: '0.3rem 0.625rem', fontSize: '0.75rem' }}
-                    onClick={() => handleDownload(c._id, c.filename)}>
-                    <Download size={12} /> PDF
-                  </button>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button className="btn-secondary" style={{ padding: '0.3rem 0.625rem', fontSize: '0.75rem' }}
+                      onClick={() => handlePreview(c._id)}>
+                      <Eye size={12} /> Preview
+                    </button>
+                    <button className="btn-secondary" style={{ padding: '0.3rem 0.625rem', fontSize: '0.75rem' }}
+                      onClick={() => handleDownload(c._id, c.filename)}>
+                      <Download size={12} /> PDF
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}</tbody>
           </table>
         </div>
       )}
+
+      {/* Preview Modal */}
+      <PreviewModal isOpen={isPreviewOpen} onClose={closePreview} url={previewUrl} />
     </div>
   );
 }
@@ -440,7 +469,10 @@ function StepSend({ event, generatedIds, sentCount, setSentCount }) {
     if (!ids.length) return toast.error('No pending certificates to send.');
     setSending(true);
     try {
-      const res = await api.post('/certificates/send-email', { certificateIds: ids });
+      const res = await api.post('/certificates/send-email', { 
+        certificateIds: ids,
+        emailTemplateId: event.emailTemplateId?._id || event.emailTemplateId
+      });
       setSentCount(res.data.sent.length);
       if (res.data.failed?.length) toast.error(`${res.data.failed.length} emails failed.`);
       else toast.success('All emails sent successfully!');

@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard, CalendarDays, Image, FileText, Users, Mail,
-  Award, ShieldCheck, Menu, X
+  Award, ShieldCheck, Menu, X, User, Settings
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -10,7 +10,9 @@ const adminLinks = [
   { to: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/admin/supervisors', icon: Users, label: 'Supervisors' },
   { to: '/admin/certificates', icon: Image, label: 'Certificates' },
+  { to: '/supervisor/email-templates', icon: Mail, label: 'Email Templates' },
   { to: '/admin/repository', icon: Award, label: 'Repository' },
+  { to: '/admin/settings', icon: Settings, label: 'Settings' },
 ];
 
 const supervisorLinks = [
@@ -41,7 +43,7 @@ export default function Sidebar() {
 
       <aside className={`sidebar ${open ? 'open' : ''}`}>
         {/* Logo */}
-        <div style={{ padding: '1.5rem 1.25rem 1rem', borderBottom: '1px solid rgba(99,102,241,0.1)' }}>
+        <div style={{ padding: '1.5rem 1.25rem 1rem', borderBottom: '1px solid var(--border-color)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <div style={{
               width: 40, height: 40, borderRadius: 10,
@@ -51,45 +53,54 @@ export default function Sidebar() {
               <Award size={22} color="white" />
             </div>
             <div>
-              <div style={{ fontWeight: 800, fontSize: '1rem', color: '#f1f5f9', letterSpacing: '-0.02em' }}>CARMS</div>
-              <div style={{ fontSize: '0.7rem', color: '#64748b', lineHeight: 1 }}>Certificate System</div>
+              <div style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--text-title)', letterSpacing: '-0.02em' }}>CARMS</div>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', lineHeight: 1 }}>Certificate System</div>
             </div>
           </div>
         </div>
 
         {/* User info */}
-        <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid rgba(99,102,241,0.08)' }}>
-          <div style={{
-            background: 'rgba(99,102,241,0.08)', borderRadius: 10, padding: '0.75rem',
-            border: '1px solid rgba(99,102,241,0.15)'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
-              <div style={{
-                width: 34, height: 34, borderRadius: '50%',
-                background: 'linear-gradient(135deg, #6366f1, #818cf8)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontWeight: 700, fontSize: '0.875rem', color: 'white', flexShrink: 0
-              }}>
-                {user?.name?.[0]?.toUpperCase()}
-              </div>
-              <div style={{ overflow: 'hidden' }}>
-                <div style={{ fontWeight: 600, fontSize: '0.8125rem', color: '#e2e8f0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {user?.name}
+        <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--border-color)' }}>
+          <NavLink to="/supervisor/profile" style={{ textDecoration: 'none' }} className={({ isActive }) => isActive ? 'profile-active' : ''}>
+            <div style={{
+              background: 'var(--profile-bg)', borderRadius: 10, padding: '0.75rem',
+              border: '1px solid var(--border-color)',
+              cursor: 'pointer',
+              transition: 'background 0.2s'
+            }} className="profile-box">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+                <div style={{
+                  width: 34, height: 34, borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #6366f1, #818cf8)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontWeight: 700, fontSize: '0.875rem', color: 'white', flexShrink: 0,
+                  overflow: 'hidden'
+                }}>
+                  {user?.avatar ? (
+                    <img src={`/uploads/avatars/${user.avatar}`} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    user?.name?.[0]?.toUpperCase()
+                  )}
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginTop: '0.125rem' }}>
-                  <ShieldCheck size={11} color={isAdmin ? '#818cf8' : '#34d399'} />
-                  <span style={{ fontSize: '0.7rem', color: isAdmin ? '#818cf8' : '#34d399', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    {user?.role}
-                  </span>
+                <div style={{ overflow: 'hidden' }}>
+                  <div style={{ fontWeight: 600, fontSize: '0.8125rem', color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {user?.name}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginTop: '0.125rem' }}>
+                    <ShieldCheck size={11} color={isAdmin ? '#818cf8' : '#34d399'} />
+                    <span style={{ fontSize: '0.7rem', color: isAdmin ? '#818cf8' : '#34d399', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      {user?.role}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          </NavLink>
         </div>
 
         {/* Navigation */}
         <nav style={{ flex: 1, padding: '0.75rem 0', overflowY: 'auto' }}>
-          <div style={{ padding: '0 0.75rem 0.5rem', fontSize: '0.7rem', fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          <div style={{ padding: '0 0.75rem 0.5rem', fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
             Navigation
           </div>
           {links.map(({ to, icon: Icon, label }) => (

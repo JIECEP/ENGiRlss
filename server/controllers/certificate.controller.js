@@ -1,6 +1,7 @@
 import Certificate from '../models/Certificate.js';
 import Template from '../models/Template.js';
 import Event from '../models/Event.js';
+import EmailTemplate from '../models/EmailTemplate.js';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import nodemailer from 'nodemailer';
 import fs from 'fs';
@@ -68,11 +69,23 @@ export const generateCertificates = async (req, res) => {
 
         const font = await pdfDoc.embedFont(selectedFont);
         const nameText = participant.name;
-        const nameFontSize = template.fontSize || 42;
-        const nameWidth = font.widthOfTextAtSize(nameText, nameFontSize);
+        let nameFontSize = template.fontSize || 42;
+        let nameWidth = font.widthOfTextAtSize(nameText, nameFontSize);
 
         const nameX = template.nameX ?? 0.5;
         const nameY = template.nameY ?? 0.5;
+
+        // Calculate max allowed width based on position to avoid edge overflow
+        const spaceLeft = width * nameX;
+        const spaceRight = width * (1 - nameX);
+        const maxAllowedWidth = Math.min(spaceLeft, spaceRight) * 2 * 0.9; // 90% of available symmetric space
+
+        if (nameWidth > maxAllowedWidth) {
+          const scaledFontSize = Math.floor(nameFontSize * (maxAllowedWidth / nameWidth));
+          nameFontSize = Math.max(scaledFontSize, 16); // Min font size 16
+          nameWidth = font.widthOfTextAtSize(nameText, nameFontSize);
+        }
+
         const xPos = (width * nameX) - (nameWidth / 2);
         const yPos = height - (height * nameY) - (nameFontSize / 3);
 
@@ -132,7 +145,8 @@ export const generateCertificates = async (req, res) => {
 // Send certificates via email
 export const sendEmails = async (req, res) => {
   try {
-    const { certificateIds } = req.body;
+    const { certificateIds, emailTemplateId } = req.body;
+    console.log('Received in sendEmails:', { certificateIdsCount: certificateIds?.length, emailTemplateId });
 
     if (!certificateIds || !Array.isArray(certificateIds) || certificateIds.length === 0) {
       return res.status(400).json({ success: false, message: 'No certificate IDs provided.' });
@@ -142,6 +156,22 @@ export const sendEmails = async (req, res) => {
     if (certificates.length === 0) {
       return res.status(400).json({ success: false, message: 'Certificates not found.' });
     }
+
+    let emailTemplate;
+    if (emailTemplateId) {
+      emailTemplate = await EmailTemplate.findById(emailTemplateId);
+    }
+
+    const subject = emailTemplate?.subject || 'Your Certificate of Participation';
+    const bodyTemplate = emailTemplate?.body || `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #4f46e5;">Certificate of Participation</h2>
+        <p>Dear <strong>{{name}}</strong>,</p>
+        <p>Congratulations! Please find attached your certificate.</p>
+        <br/>
+        <p>Best regards,<br/><strong>CARMS System</strong></p>
+      </div>
+    `;
 
     const transporter = nodemailer.createTransport({
       service: 'gmail',
@@ -154,45 +184,61 @@ export const sendEmails = async (req, res) => {
     const sent = [];
     const failed = [];
 
-    for (const cert of certificates) {
+    const promises = certificates.map(async (cert) => {
       if (!fs.existsSync(cert.pdfPath)) {
         failed.push({ certId: cert._id, error: 'Missing PDF file.' });
-        continue;
+        return;
       }
 
       try {
+        // Replace all occurrences of {{name}} with bold text
+        let htmlBody = bodyTemplate.replace(/\{\{name\}\}/g, `<strong>${cert.participantName}</strong>`);
+        
+        // Convert newlines to <br/> unless it's a full HTML document
+        const isFullHtml = htmlBody.trim().toLowerCase().startsWith('<!doctype') || 
+                           htmlBody.trim().toLowerCase().startsWith('<html');
+        if (!isFullHtml) {
+          htmlBody = htmlBody.replace(/\n/g, '<br/>');
+        }
+
         await transporter.sendMail({
           from: process.env.EMAIL_USER,
           to: cert.participantEmail,
-          subject: `Your Certificate of Participation`,
-          html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-              <h2 style="color: #4f46e5;">Certificate of Participation</h2>
-              <p>Dear <strong>${cert.participantName}</strong>,</p>
-              <p>Congratulations! Please find attached your certificate.</p>
-              <br/>
-              <p>Best regards,<br/><strong>CARMS System</strong></p>
-            </div>
-          `,
+          subject: subject,
+          html: htmlBody,
           attachments: [{
             filename: cert.filename,
             path: cert.pdfPath,
           }],
         });
 
-        cert.emailSent = true;
-        cert.emailSentAt = new Date();
-        await cert.save();
+        // Email sent successfully, now update DB
+        try {
+          cert.emailSent = true;
+          cert.emailSentAt = new Date();
+          await cert.save();
+        } catch (dbErr) {
+          console.error('Failed to update certificate status in DB:', dbErr);
+          // We still add it to sent because the email was delivered
+        }
+        
         sent.push({ certId: cert._id, name: cert.participantName, email: cert.participantEmail });
       } catch (err) {
+        console.error('Email sending failed for', cert.participantName, ':', err);
         failed.push({ certId: cert._id, name: cert.participantName, error: err.message });
       }
-    }
+    });
+
+    await Promise.all(promises);
 
     // Update event status if all certificates belong to an event
     if (sent.length > 0) {
-      const sentCerts = await Certificate.find({ _id: { $in: sent.map(s => s.certId) } });
-      const eventIds = [...new Set(sentCerts.filter(c => c.eventId).map(c => c.eventId.toString()))];
+      const eventIds = [...new Set(certificates
+        .filter(c => sent.some(s => s.certId.toString() === c._id.toString()))
+        .map(c => c.eventId?.toString())
+        .filter(Boolean)
+      )];
+
       for (const eid of eventIds) {
         const pending = await Certificate.countDocuments({ eventId: eid, emailSent: false });
         if (pending === 0) {
@@ -256,12 +302,13 @@ export const downloadCertificate = async (req, res) => {
 // Get dashboard stats
 export const getStats = async (req, res) => {
   try {
-    const [totalCerts, sentCerts, pendingCerts] = await Promise.all([
+    const [totalCerts, sentCerts, pendingCerts, totalEmailTemplates] = await Promise.all([
       Certificate.countDocuments(),
       Certificate.countDocuments({ emailSent: true }),
       Certificate.countDocuments({ emailSent: false }),
+      EmailTemplate.countDocuments(),
     ]);
-    res.json({ success: true, stats: { totalCerts, sentCerts, pendingCerts } });
+    res.json({ success: true, stats: { totalCerts, sentCerts, pendingCerts, totalEmailTemplates } });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

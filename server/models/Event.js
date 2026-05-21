@@ -5,6 +5,7 @@ const eventSchema = new mongoose.Schema({
   description: { type: String, trim: true, default: '' },
   date: { type: Date, required: true },
   templateId: { type: mongoose.Schema.Types.ObjectId, ref: 'Template', default: null },
+  emailTemplateId: { type: mongoose.Schema.Types.ObjectId, ref: 'EmailTemplate', default: null },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   status: { type: String, enum: ['draft', 'generated', 'sent'], default: 'draft' },
   recipientCount: { type: Number, default: 0 },

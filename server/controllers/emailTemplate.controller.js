@@ -1,28 +1,19 @@
 import EmailTemplate from '../models/EmailTemplate.js';
+import User from '../models/User.js';
 
 // Get all email templates
 export const getEmailTemplates = async (req, res) => {
   try {
-    let templates = await EmailTemplate.find({ createdBy: req.user._id });
-    
-    if (templates.length === 0) {
-      // Create a default template if none exist
-      const defaultTemplate = await EmailTemplate.create({
-        name: 'Default Participation Template',
-        subject: 'Your Certificate of Participation',
-        body: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #4f46e5;">Certificate of Participation</h2>
-            <p>Dear <strong>{{name}}</strong>,</p>
-            <p>Congratulations! Please find attached your certificate.</p>
-            <br/>
-            <p>Best regards,<br/><strong>CARMS System</strong></p>
-          </div>
-        `,
-        createdBy: req.user._id,
-      });
-      templates = [defaultTemplate];
+    let query = {};
+    if (req.user.role !== 'admin') {
+      if (req.user.project) {
+        const userIds = await User.find({ project: req.user.project }).distinct('_id');
+        query.createdBy = { $in: userIds };
+      } else {
+        query.createdBy = req.user._id;
+      }
     }
+    let templates = await EmailTemplate.find(query).populate('createdBy', 'name');
     
     res.json({ success: true, templates });
   } catch (error) {
@@ -50,14 +41,25 @@ export const createEmailTemplate = async (req, res) => {
 export const updateEmailTemplate = async (req, res) => {
   try {
     const { name, subject, body } = req.body;
-    const template = await EmailTemplate.findOneAndUpdate(
-      { _id: req.params.id, createdBy: req.user._id },
-      { name, subject, body },
-      { new: true }
-    );
+    const template = await EmailTemplate.findById(req.params.id);
     if (!template) {
       return res.status(404).json({ success: false, message: 'Template not found' });
     }
+
+    if (req.user.role !== 'admin') {
+      const creator = await User.findById(template.createdBy);
+      const isOwner = template.createdBy.toString() === req.user._id.toString();
+      const isSameProject = creator && req.user.project && creator.project && creator.project.toString() === req.user.project.toString();
+      if (!isOwner && !isSameProject) {
+        return res.status(403).json({ success: false, message: 'Not authorized to modify this template.' });
+      }
+    }
+
+    template.name = name !== undefined ? name : template.name;
+    template.subject = subject !== undefined ? subject : template.subject;
+    template.body = body !== undefined ? body : template.body;
+    await template.save();
+
     res.json({ success: true, template });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -67,13 +69,21 @@ export const updateEmailTemplate = async (req, res) => {
 // Delete a template
 export const deleteEmailTemplate = async (req, res) => {
   try {
-    const template = await EmailTemplate.findOneAndDelete({
-      _id: req.params.id,
-      createdBy: req.user._id,
-    });
+    const template = await EmailTemplate.findById(req.params.id);
     if (!template) {
       return res.status(404).json({ success: false, message: 'Template not found' });
     }
+
+    if (req.user.role !== 'admin') {
+      const creator = await User.findById(template.createdBy);
+      const isOwner = template.createdBy.toString() === req.user._id.toString();
+      const isSameProject = creator && req.user.project && creator.project && creator.project.toString() === req.user.project.toString();
+      if (!isOwner && !isSameProject) {
+        return res.status(403).json({ success: false, message: 'Not authorized to delete this template.' });
+      }
+    }
+
+    await template.deleteOne();
     res.json({ success: true, message: 'Template deleted' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

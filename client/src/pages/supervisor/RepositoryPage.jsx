@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import api from '../../services/api';
-import { Award, Download, Search, CheckCircle, Clock, Filter } from 'lucide-react';
+import { Award, Download, Search, CheckCircle, Clock, Filter, Eye } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
+import PreviewModal from '../../components/PreviewModal';
 
 export default function RepositoryPage() {
   const [certificates, setCertificates] = useState([]);
@@ -11,6 +12,8 @@ export default function RepositoryPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filterTemplate, setFilterTemplate] = useState('');
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const fetchCerts = async () => {
     try {
@@ -42,6 +45,23 @@ export default function RepositoryPage() {
       a.href = url; a.download = filename; a.click();
       window.URL.revokeObjectURL(url);
     } catch { toast.error('Download failed'); }
+  };
+
+  const handlePreview = async (certId) => {
+    try {
+      const response = await api.get(`/certificates/download/${certId}`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+      setPreviewUrl(url);
+      setIsPreviewOpen(true);
+    } catch { toast.error('Preview failed'); }
+  };
+
+  const closePreview = () => {
+    setIsPreviewOpen(false);
+    if (previewUrl) {
+      window.URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+    }
   };
 
   const filteredCerts = certificates.filter(c => {
@@ -89,8 +109,8 @@ export default function RepositoryPage() {
               <s.icon size={18} color="white" />
             </div>
             <div>
-              <div style={{ fontSize:'1.375rem', fontWeight:800, color:'#f1f5f9' }}>{s.value}</div>
-              <div style={{ fontSize:'0.75rem', color:'#64748b' }}>{s.label}</div>
+              <div style={{ fontSize:'1.375rem', fontWeight:800, color:'var(--text-title)' }}>{s.value}</div>
+              <div style={{ fontSize:'0.75rem', color:'var(--text-muted)' }}>{s.label}</div>
             </div>
           </div>
         ))}
@@ -103,10 +123,10 @@ export default function RepositoryPage() {
             {[...Array(5)].map((_, i) => <div key={i} className="skeleton" style={{ height:56, borderRadius:8, marginBottom:'0.5rem' }} />)}
           </div>
         ) : filteredCerts.length === 0 ? (
-          <div style={{ padding:'3rem', textAlign:'center', color:'#64748b' }}>
+          <div style={{ padding:'3rem', textAlign:'center', color:'var(--text-muted)' }}>
             <Award size={48} style={{ margin:'0 auto 1rem', opacity:0.3 }} />
-            <p style={{ fontSize:'0.9375rem', color:'#e2e8f0', marginBottom:'0.5rem' }}>No certificates found</p>
-            <p style={{ fontSize:'0.8125rem' }}>Generate certificates from the Certificates tab.</p>
+            <p style={{ fontSize:'0.9375rem', color:'var(--text-main)', marginBottom:'0.5rem' }}>No certificates found</p>
+            <p style={{ fontSize:'0.8125rem', color:'var(--text-muted)' }}>Generate certificates from the Certificates tab.</p>
           </div>
         ) : (
           <div className="table-container" style={{ border:'none', borderRadius:0 }}>
@@ -132,15 +152,15 @@ export default function RepositoryPage() {
                           fontWeight:700, fontSize:'0.75rem', color:'white'
                         }}>{cert.participantName?.[0]?.toUpperCase() || '?'}</div>
                         <div>
-                          <div style={{ fontWeight:500, color:'#e2e8f0', fontSize:'0.875rem' }}>{cert.participantName || 'N/A'}</div>
-                          <div style={{ fontSize:'0.75rem', color:'#64748b' }}>{cert.participantEmail}</div>
+                        <div style={{ fontWeight:500, color:'var(--text-main)', fontSize:'0.875rem' }}>{cert.participantName || 'N/A'}</div>
+                          <div style={{ fontSize:'0.75rem', color:'var(--text-muted)' }}>{cert.participantEmail}</div>
                         </div>
                       </div>
                     </td>
                     <td>
-                      <div style={{ fontWeight:500, color:'#e2e8f0', fontSize:'0.875rem' }}>{cert.templateId?.originalName || 'N/A'}</div>
+                      <div style={{ fontWeight:500, color:'var(--text-main)', fontSize:'0.875rem' }}>{cert.templateId?.originalName || 'N/A'}</div>
                     </td>
-                    <td style={{ color:'#64748b', fontSize:'0.8125rem' }}>
+                    <td style={{ color:'var(--text-muted)', fontSize:'0.8125rem' }}>
                       {format(new Date(cert.createdAt), 'MMM d, yyyy HH:mm')}
                     </td>
                     <td>
@@ -155,10 +175,16 @@ export default function RepositoryPage() {
                       )}
                     </td>
                     <td>
-                      <button className="btn-secondary" onClick={() => handleDownload(cert._id, cert.filename)}
-                        style={{ padding:'0.375rem 0.75rem', fontSize:'0.75rem' }}>
-                        <Download size={13} /> Download
-                      </button>
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button className="btn-secondary" onClick={() => handlePreview(cert._id)}
+                          style={{ padding:'0.375rem 0.75rem', fontSize:'0.75rem' }}>
+                          <Eye size={13} /> Preview
+                        </button>
+                        <button className="btn-secondary" onClick={() => handleDownload(cert._id, cert.filename)}
+                          style={{ padding:'0.375rem 0.75rem', fontSize:'0.75rem' }}>
+                          <Download size={13} /> Download
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -167,6 +193,7 @@ export default function RepositoryPage() {
           </div>
         )}
       </div>
+      <PreviewModal isOpen={isPreviewOpen} onClose={closePreview} url={previewUrl} />
     </DashboardLayout>
   );
 }

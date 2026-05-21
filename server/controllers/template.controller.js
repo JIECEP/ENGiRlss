@@ -1,4 +1,5 @@
 import Template from '../models/Template.js';
+import User from '../models/User.js';
 import fs from 'fs';
 import path from 'path';
 
@@ -29,7 +30,15 @@ export const uploadTemplate = async (req, res) => {
 
 export const getTemplates = async (req, res) => {
   try {
-    const filter = req.user.role === 'admin' ? {} : { uploadedBy: req.user._id };
+    let filter = {};
+    if (req.user.role !== 'admin') {
+      if (req.user.project) {
+        const userIds = await User.find({ project: req.user.project }).distinct('_id');
+        filter = { uploadedBy: { $in: userIds } };
+      } else {
+        filter = { uploadedBy: req.user._id };
+      }
+    }
     const templates = await Template.find(filter)
       .populate('uploadedBy', 'name email')
       .sort({ createdAt: -1 });
@@ -45,6 +54,16 @@ export const deleteTemplate = async (req, res) => {
     if (!template) {
       return res.status(404).json({ success: false, message: 'Template not found.' });
     }
+
+    if (req.user.role !== 'admin') {
+      const creator = await User.findById(template.uploadedBy);
+      const isOwner = template.uploadedBy.toString() === req.user._id.toString();
+      const isSameProject = creator && req.user.project && creator.project && creator.project.toString() === req.user.project.toString();
+      if (!isOwner && !isSameProject) {
+        return res.status(403).json({ success: false, message: 'Not authorized to delete this template.' });
+      }
+    }
+
     // Delete file from filesystem
     if (fs.existsSync(template.filepath)) {
       fs.unlinkSync(template.filepath);

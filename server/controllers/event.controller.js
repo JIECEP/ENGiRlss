@@ -1,5 +1,6 @@
 import Event from '../models/Event.js';
 import Certificate from '../models/Certificate.js';
+import User from '../models/User.js';
 import fs from 'fs';
 
 export const createEvent = async (req, res) => {
@@ -22,9 +23,18 @@ export const createEvent = async (req, res) => {
 
 export const getEvents = async (req, res) => {
   try {
-    const filter = req.user.role === 'admin' ? {} : { createdBy: req.user._id };
+    let filter = {};
+    if (req.user.role !== 'admin') {
+      if (req.user.project) {
+        const userIds = await User.find({ project: req.user.project }).distinct('_id');
+        filter = { createdBy: { $in: userIds } };
+      } else {
+        filter = { createdBy: req.user._id };
+      }
+    }
     const events = await Event.find(filter)
       .populate('templateId', 'originalName filename')
+      .populate('emailTemplateId')
       .populate('createdBy', 'name email')
       .sort({ createdAt: -1 });
 
@@ -50,8 +60,19 @@ export const getEvent = async (req, res) => {
   try {
     const event = await Event.findById(req.params.id)
       .populate('templateId')
+      .populate('emailTemplateId')
       .populate('createdBy', 'name email');
     if (!event) return res.status(404).json({ success: false, message: 'Event not found.' });
+
+    if (req.user.role !== 'admin') {
+      const creatorId = event.createdBy._id || event.createdBy;
+      const creator = await User.findById(creatorId);
+      const isOwner = creatorId.toString() === req.user._id.toString();
+      const isSameProject = creator && req.user.project && creator.project && creator.project.toString() === req.user.project.toString();
+      if (!isOwner && !isSameProject) {
+        return res.status(403).json({ success: false, message: 'Not authorized to access this event.' });
+      }
+    }
 
     const [totalCerts, sentCerts] = await Promise.all([
       Certificate.countDocuments({ eventId: event._id }),
@@ -70,17 +91,28 @@ export const getEvent = async (req, res) => {
 
 export const updateEvent = async (req, res) => {
   try {
-    const { title, description, date, templateId } = req.body;
+    const { title, description, date, templateId, emailTemplateId } = req.body;
     const event = await Event.findById(req.params.id);
     if (!event) return res.status(404).json({ success: false, message: 'Event not found.' });
+
+    if (req.user.role !== 'admin') {
+      const creator = await User.findById(event.createdBy);
+      const isOwner = event.createdBy.toString() === req.user._id.toString();
+      const isSameProject = creator && req.user.project && creator.project && creator.project.toString() === req.user.project.toString();
+      if (!isOwner && !isSameProject) {
+        return res.status(403).json({ success: false, message: 'Not authorized to modify this event.' });
+      }
+    }
 
     if (title !== undefined) event.title = title;
     if (description !== undefined) event.description = description;
     if (date !== undefined) event.date = date;
     if (templateId !== undefined) event.templateId = templateId;
+    if (emailTemplateId !== undefined) event.emailTemplateId = emailTemplateId;
 
     await event.save();
     await event.populate('templateId');
+    await event.populate('emailTemplateId');
     await event.populate('createdBy', 'name email');
     res.json({ success: true, event });
   } catch (error) {
@@ -92,6 +124,15 @@ export const deleteEvent = async (req, res) => {
   try {
     const event = await Event.findById(req.params.id);
     if (!event) return res.status(404).json({ success: false, message: 'Event not found.' });
+
+    if (req.user.role !== 'admin') {
+      const creator = await User.findById(event.createdBy);
+      const isOwner = event.createdBy.toString() === req.user._id.toString();
+      const isSameProject = creator && req.user.project && creator.project && creator.project.toString() === req.user.project.toString();
+      if (!isOwner && !isSameProject) {
+        return res.status(403).json({ success: false, message: 'Not authorized to delete this event.' });
+      }
+    }
 
     // Delete associated certificates and their PDF files
     const certs = await Certificate.find({ eventId: event._id });

@@ -1,9 +1,16 @@
 import User from '../models/User.js';
 import sendEmail from '../utils/sendEmail.js';
+import ActivityLog from '../models/ActivityLog.js';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find().sort({ createdAt: -1 });
+    const users = await User.find().populate('project').sort({ createdAt: -1 });
     res.json({ success: true, users });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -12,13 +19,21 @@ export const getAllUsers = async (req, res) => {
 
 export const createSupervisor = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, project } = req.body;
     const existing = await User.findOne({ email });
     if (existing) {
       return res.status(400).json({ success: false, message: 'Email already registered.' });
     }
     
-    const user = await User.create({ name, email, password, role: 'supervisor', isVerified: true });
+    const user = await User.create({ 
+      name, 
+      email, 
+      password, 
+      role: 'supervisor', 
+      isVerified: true,
+      project: project || null
+    });
+    await user.populate('project');
     
 
     try {
@@ -57,12 +72,12 @@ export const createSupervisor = async (req, res) => {
 
 export const updateUser = async (req, res) => {
   try {
-    const { name, email, isActive } = req.body;
+    const { name, email, isActive, project } = req.body;
     const user = await User.findByIdAndUpdate(
       req.params.id,
-      { name, email, isActive },
+      { name, email, isActive, project: project || null },
       { new: true, runValidators: true }
-    );
+    ).populate('project');
     if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
     res.json({ success: true, user });
   } catch (error) {
@@ -87,6 +102,85 @@ export const toggleUserStatus = async (req, res) => {
     user.isActive = !user.isActive;
     await user.save();
     res.json({ success: true, user, message: `User ${user.isActive ? 'activated' : 'deactivated'}.` });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const updateProfile = async (req, res) => {
+  try {
+    const { name, email, currentPassword, newPassword, notificationPreferences } = req.body;
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found.' });
+    }
+
+    // If changing email, check if new email is taken
+    if (email && email !== user.email) {
+      const existing = await User.findOne({ email });
+      if (existing) {
+        return res.status(400).json({ success: false, message: 'Email already in use.' });
+      }
+      user.email = email;
+    }
+
+    if (name) user.name = name;
+
+    if (notificationPreferences) {
+      user.notificationPreferences = { ...user.notificationPreferences, ...notificationPreferences };
+    }
+
+    // If changing password
+    if (newPassword) {
+      if (!currentPassword) {
+        return res.status(400).json({ success: false, message: 'Current password is required to set a new password.' });
+      }
+      const isMatch = await user.comparePassword(currentPassword);
+      if (!isMatch) {
+        return res.status(400).json({ success: false, message: 'Incorrect current password.' });
+      }
+      user.password = newPassword; // Pre-save hook will hash it
+    }
+
+    await user.save();
+    res.json({ success: true, user, message: 'Profile updated successfully.' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const uploadAvatarCtrl = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No file uploaded.' });
+    }
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
+
+    // Delete old avatar if exists
+    if (user.avatar) {
+      const oldPath = path.join(__dirname, '../uploads/avatars', user.avatar);
+      if (fs.existsSync(oldPath)) {
+        fs.unlinkSync(oldPath);
+      }
+    }
+
+    user.avatar = req.file.filename;
+    await user.save();
+
+    res.json({ success: true, avatar: user.avatar, message: 'Avatar uploaded successfully.' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getActivityLog = async (req, res) => {
+  try {
+    const logs = await ActivityLog.find({ user: req.user._id })
+      .sort({ createdAt: -1 })
+      .limit(10);
+    res.json({ success: true, logs });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

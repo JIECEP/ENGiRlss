@@ -2,15 +2,17 @@ import { useState, useEffect, useCallback } from 'react';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import api from '../../services/api';
 import { useDropzone } from 'react-dropzone';
-import { FileText, Upload, CheckCircle, Mail, AlertCircle, Eye, Image as ImageIcon } from 'lucide-react';
+import { FileText, Upload, CheckCircle, Mail, Eye, Image as ImageIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
 import * as XLSX from 'xlsx';
 
 export default function CertificatesGeneratorPage() {
   const [templates, setTemplates] = useState([]);
+  const [emailTemplates, setEmailTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
   
   const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [selectedEmailTemplate, setSelectedEmailTemplate] = useState(null);
   const [participants, setParticipants] = useState([]);
   const [generating, setGenerating] = useState(false);
   const [generatedIds, setGeneratedIds] = useState([]);
@@ -18,10 +20,21 @@ export default function CertificatesGeneratorPage() {
   const [sentCount, setSentCount] = useState(0);
 
   useEffect(() => {
-    api.get('/templates')
-      .then(res => setTemplates(res.data.templates || []))
-      .catch(() => toast.error('Failed to load templates'))
-      .finally(() => setLoading(false));
+    const loadData = async () => {
+      try {
+        const [tmplRes, emailRes] = await Promise.all([
+          api.get('/templates'),
+          api.get('/email-templates')
+        ]);
+        setTemplates(tmplRes.data.templates || []);
+        setEmailTemplates(emailRes.data.templates || []);
+      } catch {
+        toast.error('Failed to load data');
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
   }, []);
 
   const onDrop = useCallback((acceptedFiles) => {
@@ -38,7 +51,6 @@ export default function CertificatesGeneratorPage() {
         const json = XLSX.utils.sheet_to_json(worksheet);
         
         const parsed = json.map((row, i) => {
-          // Try to aggressively find name and email keys
           const keys = Object.keys(row);
           const nameKey = keys.find(k => k.toLowerCase().includes('name')) || keys[0];
           const emailKey = keys.find(k => k.toLowerCase().includes('email')) || keys[1];
@@ -93,7 +105,10 @@ export default function CertificatesGeneratorPage() {
     if (!generatedIds.length) return toast.error('No certificates generated yet.');
     setSending(true);
     try {
-      const res = await api.post('/certificates/send-email', { certificateIds: generatedIds });
+      const res = await api.post('/certificates/send-email', { 
+        certificateIds: generatedIds,
+        emailTemplateId: selectedEmailTemplate?._id
+      });
       setSentCount(res.data.sent.length);
       if (res.data.failed.length > 0) {
         toast.error(`${res.data.failed.length} emails failed to send.`);
@@ -109,6 +124,7 @@ export default function CertificatesGeneratorPage() {
 
   const resetSelection = () => {
     setSelectedTemplate(null);
+    setSelectedEmailTemplate(null);
     setParticipants([]);
     setGeneratedIds([]);
     setSentCount(0);
@@ -155,15 +171,49 @@ export default function CertificatesGeneratorPage() {
                       </tbody>
                     </table>
                   </div>
-                  {participants.length > 50 && <p style={{ fontSize:'0.75rem', color:'#64748b', marginTop:'0.5rem', textAlign:'center' }}>Showing first 50 rows...</p>}
                 </div>
               )}
             </div>
 
-            {/* Step 2 & 3: Actions */}
+            {/* Step 1.5: Select Email Template */}
             <div className="glass" style={{ borderRadius:16, padding:'1.5rem' }}>
               <h3 style={{ fontSize:'1.125rem', fontWeight:700, color:'#f1f5f9', marginBottom:'1rem' }}>
-                2. Process & Dispatch
+                2. Select Email Template
+              </h3>
+              {emailTemplates.length === 0 ? (
+                <div style={{ color: '#64748b', fontSize: '0.875rem' }}>No email templates found.</div>
+              ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: '1rem' }}>
+                  {emailTemplates.map(tmpl => {
+                    const selected = selectedEmailTemplate?._id === tmpl._id;
+                    return (
+                      <div key={tmpl._id} className="card-hover" onClick={() => setSelectedEmailTemplate(tmpl)}
+                        style={{
+                          background: selected ? 'rgba(99,102,241,0.12)' : 'rgba(15,23,42,0.6)',
+                          border: selected ? '2px solid #6366f1' : '1px solid rgba(99,102,241,0.15)',
+                          borderRadius: 12, padding: '1rem', cursor: 'pointer',
+                          display:'flex', justifyContent:'space-between', alignItems:'center'
+                        }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontWeight: 600, color: '#e2e8f0', fontSize: '0.875rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {tmpl.name}
+                          </div>
+                          <div style={{ color: '#64748b', fontSize: '0.75rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            Subject: {tmpl.subject}
+                          </div>
+                        </div>
+                        {selected && <CheckCircle size={16} color="#6366f1" style={{ flexShrink: 0, marginLeft: '0.5rem' }} />}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Step 3: Actions */}
+            <div className="glass" style={{ borderRadius:16, padding:'1.5rem' }}>
+              <h3 style={{ fontSize:'1.125rem', fontWeight:700, color:'#f1f5f9', marginBottom:'1rem' }}>
+                3. Process & Dispatch
               </h3>
               
               <div style={{ display:'flex', gap:'1rem', alignItems:'center' }}>

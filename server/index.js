@@ -14,6 +14,7 @@ import certificateRoutes from './routes/certificate.routes.js';
 import userRoutes from './routes/user.routes.js';
 import eventRoutes from './routes/event.routes.js';
 import emailTemplateRoutes from './routes/emailTemplate.routes.js';
+import projectRoutes from './routes/project.routes.js';
 
 dotenv.config();
 
@@ -52,6 +53,7 @@ app.use('/api/templates', templateRoutes);
 app.use('/api/certificates', certificateRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/email-templates', emailTemplateRoutes);
+app.use('/api/projects', projectRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

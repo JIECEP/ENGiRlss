@@ -28,8 +28,8 @@ function CreateEventModal({ onClose, onCreate }) {
     <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="modal-box" style={{ maxWidth: 500 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-          <h3 style={{ fontWeight: 700, color: '#f1f5f9', fontSize: '1.125rem' }}>Create New Event</h3>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}><X size={20} /></button>
+          <h3 style={{ fontWeight: 700, color: 'var(--text-title)', fontSize: '1.125rem' }}>Create New Event</h3>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}><X size={20} /></button>
         </div>
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: '1.25rem' }}>
@@ -111,7 +111,7 @@ export default function EventsPage() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <CalendarDays size={20} color="#6366f1" />
-          <span style={{ fontWeight: 600, color: '#f1f5f9', fontSize: '1.0625rem' }}>
+          <span style={{ fontWeight: 600, color: 'var(--text-title)', fontSize: '1.0625rem' }}>
             {events.length} Event{events.length !== 1 ? 's' : ''}
           </span>
         </div>
@@ -128,8 +128,8 @@ export default function EventsPage() {
       ) : events.length === 0 ? (
         <div className="glass" style={{ borderRadius: 16, padding: '4rem 2rem', textAlign: 'center' }}>
           <CalendarDays size={56} style={{ margin: '0 auto 1.25rem', opacity: 0.2, color: '#6366f1' }} />
-          <p style={{ color: '#e2e8f0', fontWeight: 600, fontSize: '1.0625rem', marginBottom: '0.5rem' }}>No events yet</p>
-          <p style={{ color: '#64748b', fontSize: '0.875rem', marginBottom: '1.5rem' }}>Create your first event to start generating certificates.</p>
+          <p style={{ color: 'var(--text-main)', fontWeight: 600, fontSize: '1.0625rem', marginBottom: '0.5rem' }}>No events yet</p>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>Create your first event to start generating certificates.</p>
           <button className="btn-primary" onClick={() => setShowCreate(true)}>
             <Plus size={16} /> Create Event
           </button>
@@ -153,12 +153,12 @@ export default function EventsPage() {
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <h3 style={{ fontWeight: 700, color: '#f1f5f9', fontSize: '1.0625rem', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <h3 style={{ fontWeight: 700, color: 'var(--text-title)', fontSize: '1.0625rem', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {event.title}
                     </h3>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.375rem' }}>
                       <CalendarDays size={13} color="#64748b" />
-                      <span style={{ fontSize: '0.8125rem', color: '#94a3b8' }}>
+                      <span style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
                         {format(new Date(event.date), 'MMMM d, yyyy')}
                       </span>
                     </div>
@@ -170,25 +170,34 @@ export default function EventsPage() {
               {/* Card body */}
               <div style={{ padding: '1rem 1.5rem' }}>
                 {event.description && (
-                  <p style={{ fontSize: '0.8125rem', color: '#94a3b8', marginBottom: '1rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', marginBottom: '0.75rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {event.description}
                   </p>
                 )}
 
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                  <div>
+                    By: <span style={{ color: 'var(--text-muted)', fontWeight: 500 }}>{event.createdBy?.name || 'System'}</span>
+                  </div>
+                  <div>
+                    Created: <span style={{ color: 'var(--text-muted)' }}>{format(new Date(event.createdAt), 'MMM d, yyyy')}</span>
+                  </div>
+                </div>
+
                 <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '1rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
                     <Users size={14} color="#818cf8" />
-                    <span style={{ fontSize: '0.8125rem', color: '#e2e8f0', fontWeight: 600 }}>
+                    <span style={{ fontSize: '0.8125rem', color: 'var(--text-main)', fontWeight: 600 }}>
                       {event.totalCerts || 0}
                     </span>
-                    <span style={{ fontSize: '0.75rem', color: '#64748b' }}>recipients</span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>recipients</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
                     <CheckCircle size={14} color="#10b981" />
-                    <span style={{ fontSize: '0.8125rem', color: '#e2e8f0', fontWeight: 600 }}>
+                    <span style={{ fontSize: '0.8125rem', color: 'var(--text-main)', fontWeight: 600 }}>
                       {event.sentCerts || 0}
                     </span>
-                    <span style={{ fontSize: '0.75rem', color: '#64748b' }}>sent</span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>sent</span>
                   </div>
                 </div>
 

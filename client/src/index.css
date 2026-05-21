@@ -2,6 +2,22 @@
 @import "tailwindcss";
 
 :root {
+  --bg-main: #0f172a;
+  --bg-surface: #1e293b;
+  --bg-surface-glass: rgba(30, 41, 59, 0.7);
+  --border-color: rgba(99, 102, 241, 0.15);
+  --text-main: #e2e8f0;
+  --text-title: #f1f5f9;
+  --text-muted: #94a3b8;
+  --header-bg: rgba(15, 23, 42, 0.95);
+  --search-bg: rgba(30, 41, 59, 0.8);
+  --sidebar-bg: rgba(15, 23, 42, 0.95);
+  --dropdown-bg: #1e293b;
+  --profile-bg: rgba(99, 102, 241, 0.08);
+  --input-bg: rgba(15, 23, 42, 0.8);
+  --table-header-bg: rgba(15, 23, 42, 0.9);
+  --table-border: rgba(30, 41, 59, 0.8);
+
   --primary: #6366f1;
   --primary-dark: #4f46e5;
   --primary-light: #818cf8;
@@ -13,7 +29,24 @@
   --dark: #0f172a;
   --dark-2: #1e293b;
   --dark-3: #334155;
-  --text-muted: #94a3b8;
+}
+
+.light-mode {
+  --bg-main: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-surface-glass: rgba(255, 255, 255, 0.85);
+  --border-color: rgba(99, 102, 241, 0.15);
+  --text-main: #1e293b;
+  --text-title: #0f172a;
+  --text-muted: #475569;
+  --header-bg: rgba(255, 255, 255, 0.95);
+  --search-bg: rgba(241, 245, 249, 0.8);
+  --sidebar-bg: #ffffff;
+  --dropdown-bg: #ffffff;
+  --profile-bg: rgba(99, 102, 241, 0.05);
+  --input-bg: #ffffff;
+  --table-header-bg: #f1f5f9;
+  --table-border: rgba(99, 102, 241, 0.05);
 }
 
 * {
@@ -28,8 +61,8 @@ html {
 
 body {
   font-family: 'Inter', sans-serif;
-  background-color: #0f172a;
-  color: #e2e8f0;
+  background-color: var(--bg-main);
+  color: var(--text-main);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 }
@@ -45,10 +78,10 @@ body {
 
 /* Glass morphism utility */
 .glass {
-  background: rgba(30, 41, 59, 0.7);
+  background: var(--bg-surface-glass);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(99, 102, 241, 0.15);
+  border: 1px solid var(--border-color);
 }
 
 .glass-light {
@@ -118,13 +151,13 @@ body {
 }
 
 .btn-secondary {
-  background: rgba(51, 65, 85, 0.8);
-  color: #e2e8f0;
+  background: var(--bg-surface);
+  color: var(--text-main);
   padding: 0.625rem 1.25rem;
   border-radius: 8px;
   font-weight: 500;
   font-size: 0.875rem;
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  border: 1px solid var(--border-color);
   cursor: pointer;
   transition: all 0.2s ease;
   display: inline-flex;
@@ -133,8 +166,9 @@ body {
   white-space: nowrap;
 }
 .btn-secondary:hover {
-  background: rgba(71, 85, 105, 0.8);
-  border-color: rgba(148, 163, 184, 0.4);
+  background: rgba(99, 102, 241, 0.1);
+  border-color: #6366f1;
+  color: var(--text-title);
 }
 
 .btn-danger {
@@ -184,11 +218,11 @@ body {
 /* Form inputs */
 .input-field {
   width: 100%;
-  background: rgba(15, 23, 42, 0.8);
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 0.75rem 1rem;
-  color: #e2e8f0;
+  color: var(--text-main);
   font-size: 0.875rem;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
   outline: none;
@@ -197,13 +231,13 @@ body {
   border-color: #6366f1;
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
-.input-field::placeholder { color: #64748b; }
+.input-field::placeholder { color: var(--text-muted); }
 
 .label {
   display: block;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #94a3b8;
+  color: var(--text-muted);
   margin-bottom: 0.5rem;
 }
 
@@ -231,25 +265,25 @@ body {
 }
 table { width: 100%; border-collapse: collapse; }
 thead th {
-  background: rgba(15, 23, 42, 0.9);
+  background: var(--table-header-bg);
   padding: 1rem 1.25rem;
   text-align: left;
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #64748b;
-  border-bottom: 1px solid rgba(99, 102, 241, 0.1);
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-color);
 }
 tbody tr {
-  border-bottom: 1px solid rgba(30, 41, 59, 0.8);
+  border-bottom: 1px solid var(--table-border);
   transition: background 0.15s ease;
 }
 tbody tr:hover { background: rgba(99, 102, 241, 0.05); }
 tbody td {
   padding: 1rem 1.25rem;
   font-size: 0.875rem;
-  color: #cbd5e1;
+  color: var(--text-main);
 }
 tbody tr:last-child { border-bottom: none; }
 
@@ -267,8 +301,8 @@ tbody tr:last-child { border-bottom: none; }
   animation: fadeIn 0.2s ease;
 }
 .modal-box {
-  background: #1e293b;
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
   border-radius: 16px;
   padding: 2rem;
   width: 100%;
@@ -322,18 +356,18 @@ tbody tr:last-child { border-bottom: none; }
 .section-title {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #f1f5f9;
+  color: var(--text-title);
   margin-bottom: 0.25rem;
 }
 .section-subtitle {
   font-size: 0.875rem;
-  color: #64748b;
+  color: var(--text-muted);
 }
 
 /* Stats card */
 .stat-card {
-  background: rgba(30, 41, 59, 0.8);
-  border: 1px solid rgba(99, 102, 241, 0.1);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
   border-radius: 16px;
   padding: 1.5rem;
   transition: all 0.2s ease;
@@ -348,8 +382,8 @@ tbody tr:last-child { border-bottom: none; }
 .sidebar {
   width: 260px;
   min-height: 100vh;
-  background: rgba(15, 23, 42, 0.95);
-  border-right: 1px solid rgba(99, 102, 241, 0.1);
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   position: fixed;
@@ -367,14 +401,14 @@ tbody tr:last-child { border-bottom: none; }
   border-radius: 10px;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #94a3b8;
+  color: var(--text-muted);
   text-decoration: none;
   transition: all 0.2s ease;
   margin: 0.125rem 0.75rem;
 }
 .sidebar-link:hover {
   background: rgba(99, 102, 241, 0.1);
-  color: #e2e8f0;
+  color: var(--text-title);
 }
 .sidebar-link.active {
   background: rgba(99, 102, 241, 0.15);
@@ -400,7 +434,7 @@ tbody tr:last-child { border-bottom: none; }
 .page-content {
   margin-left: 260px;
   min-height: 100vh;
-  background: #0f172a;
+  background: var(--bg-main);
 }
 
 /* Responsive */
@@ -408,4 +442,93 @@ tbody tr:last-child { border-bottom: none; }
   .sidebar { transform: translateX(-100%); }
   .sidebar.open { transform: translateX(0); }
   .page-content { margin-left: 0; }
+}
+
+/* Light Mode overrides handled natively by CSS custom variables */
+.light-mode h1,
+.light-mode h2,
+.light-mode h3,
+.light-mode h4,
+.light-mode h5,
+.light-mode h6,
+.light-mode strong,
+.light-mode th {
+  color: var(--text-title) !important;
+}
+
+/* Override inline colors for body text / descriptions */
+.light-mode td,
+.light-mode p,
+.light-mode .text-muted,
+.light-mode .section-subtitle,
+.light-mode label,
+.light-mode em {
+  color: var(--text-muted) !important;
+}
+
+.light-mode td strong,
+.light-mode td span:not(.badge),
+.light-mode td div:not(.badge) {
+  color: var(--text-main) !important;
+}
+
+/* Ensure headings inside glass/cards are dark */
+.light-mode .glass h3,
+.light-mode .glass h2,
+.light-mode .glass h1,
+.light-mode .glass span,
+.light-mode .stat-card h3,
+.light-mode .stat-card h2,
+.light-mode .stat-card h1 {
+  color: var(--text-title) !important;
+}
+
+/* For dashboards and statistics */
+.light-mode .stat-card p,
+.light-mode .stat-card div:not(.badge) {
+  color: var(--text-main) !important;
+}
+.light-mode .stat-card p[style*="2rem"],
+.light-mode .stat-card div[style*="1.375rem"] {
+  color: var(--text-title) !important;
+}
+
+/* Protect primary buttons, links and active badges */
+.light-mode .btn-primary,
+.light-mode .btn-primary *,
+.light-mode button.btn-primary,
+.light-mode .badge-primary {
+  color: #ffffff !important;
+}
+
+.light-mode .btn-secondary,
+.light-mode .btn-secondary *,
+.light-mode button.btn-secondary,
+.light-mode .badge-secondary {
+  color: var(--text-main) !important;
+  background: var(--bg-surface) !important;
+  border-color: var(--border-color) !important;
+}
+.light-mode .btn-secondary:hover,
+.light-mode button.btn-secondary:hover {
+  background: rgba(99, 102, 241, 0.08) !important;
+  border-color: #6366f1 !important;
+  color: var(--text-title) !important;
+}
+
+.light-mode .btn-danger,
+.light-mode .btn-danger *,
+.light-mode button.btn-danger,
+.light-mode .badge-danger {
+  color: #ffffff !important;
+}
+
+.light-mode .sidebar-link {
+  color: var(--text-muted) !important;
+}
+.light-mode .sidebar-link:hover {
+  color: var(--text-title) !important;
+}
+.light-mode .sidebar-link.active {
+  color: var(--primary) !important;
 }

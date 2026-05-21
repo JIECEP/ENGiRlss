@@ -7,6 +7,12 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true, minlength: 6 },
   role: { type: String, enum: ['admin', 'supervisor'], default: 'supervisor' },
   isActive: { type: Boolean, default: true },
+  avatar: { type: String },
+  project: { type: mongoose.Schema.Types.ObjectId, ref: 'Project', default: null },
+  notificationPreferences: {
+    emailOnComplete: { type: Boolean, default: true },
+    emailOnLogin: { type: Boolean, default: false },
+  },
   createdAt: { type: Date, default: Date.now },
 });
 

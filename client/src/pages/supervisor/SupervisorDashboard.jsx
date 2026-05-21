@@ -11,8 +11,8 @@ function StatCard({ icon: Icon, label, value, color, onClick }) {
     <div className="stat-card card-hover" onClick={onClick} style={{ cursor: onClick ? 'pointer' : 'default' }}>
       <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between' }}>
         <div>
-          <p style={{ fontSize:'0.8125rem', color:'#94a3b8', fontWeight:500, marginBottom:'0.5rem' }}>{label}</p>
-          <p style={{ fontSize:'2rem', fontWeight:800, color:'#f1f5f9', lineHeight:1 }}>{value ?? '—'}</p>
+          <p style={{ fontSize:'0.8125rem', color:'var(--text-muted)', fontWeight:500, marginBottom:'0.5rem' }}>{label}</p>
+          <p style={{ fontSize:'2rem', fontWeight:800, color:'var(--text-title)', lineHeight:1 }}>{value ?? '—'}</p>
         </div>
         <div style={{ width:48, height:48, borderRadius:12, background:color, display:'flex', alignItems:'center', justifyContent:'center' }}>
           <Icon size={22} color="white" />
@@ -73,17 +73,17 @@ export default function SupervisorDashboard() {
           <div style={{ display:'grid', gridTemplateColumns:'1fr 280px', gap:'1.5rem' }}>
             {/* Recent Certificates list */}
             <div className="glass" style={{ borderRadius:16, overflow:'hidden' }}>
-              <div style={{ padding:'1.25rem 1.5rem', borderBottom:'1px solid rgba(99,102,241,0.1)', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+              <div style={{ padding:'1.25rem 1.5rem', borderBottom:'1px solid var(--border-color)', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
                 <div style={{ display:'flex', alignItems:'center', gap:'0.5rem' }}>
                   <CalendarDays size={18} color="#6366f1" />
-                  <span style={{ fontWeight:600, color:'#f1f5f9' }}>Recent Events</span>
+                  <span style={{ fontWeight:600, color:'var(--text-title)' }}>Recent Events</span>
                 </div>
                 <button className="btn-primary" onClick={() => navigate('/supervisor/events')} style={{ padding:'0.375rem 0.875rem', fontSize:'0.75rem' }}>
                   View All
                 </button>
               </div>
               {recentEvents.length === 0 ? (
-                <div style={{ padding:'2.5rem', textAlign:'center', color:'#64748b' }}>
+                <div style={{ padding:'2.5rem', textAlign:'center', color:'var(--text-muted)' }}>
                   <CalendarDays size={36} style={{ margin:'0 auto 0.75rem', opacity:0.3 }} />
                   <p style={{ fontSize:'0.875rem' }}>No events created yet.</p>
                 </div>
@@ -108,10 +108,10 @@ export default function SupervisorDashboard() {
                         {ev.title?.[0]?.toUpperCase() || '?'}
                       </div>
                       <div style={{ flex:1, minWidth:0 }}>
-                        <div style={{ fontWeight:600, color:'#e2e8f0', fontSize:'0.875rem', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+                        <div style={{ fontWeight:600, color:'var(--text-main)', fontSize:'0.875rem', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
                           {ev.title}
                         </div>
-                        <div style={{ fontSize:'0.75rem', color:'#64748b', display:'flex', alignItems:'center', gap:'0.375rem', marginTop:'0.125rem' }}>
+                        <div style={{ fontSize:'0.75rem', color:'var(--text-muted)', display:'flex', alignItems:'center', gap:'0.375rem', marginTop:'0.125rem' }}>
                           <Clock size={11} />
                           {format(new Date(ev.date), 'MMMM d, yyyy')} · {ev.totalCerts || 0} certs
                         </div>
@@ -129,7 +129,7 @@ export default function SupervisorDashboard() {
             <div className="glass" style={{ borderRadius:16, padding:'1.5rem' }}>
               <div style={{ display:'flex', alignItems:'center', gap:'0.5rem', marginBottom:'1.25rem' }}>
                 <TrendingUp size={18} color="#6366f1" />
-                <span style={{ fontWeight:600, color:'#f1f5f9', fontSize:'0.9375rem' }}>Workflow Guide</span>
+                <span style={{ fontWeight:600, color:'var(--text-title)', fontSize:'0.9375rem' }}>Workflow Guide</span>
               </div>
               {[
                 { step:1, text:'Create an Event', done: stats.events > 0 },
@@ -151,7 +151,7 @@ export default function SupervisorDashboard() {
                   }}>
                     {item.done ? '✓' : item.step}
                   </div>
-                  <span style={{ fontSize:'0.8125rem', color: item.done ? '#94a3b8' : '#e2e8f0' }}>
+                  <span style={{ fontSize:'0.8125rem', color: item.done ? 'var(--text-muted)' : 'var(--text-main)' }}>
                     {item.text}
                   </span>
                 </div>
