@@ -37,6 +37,7 @@ export const login = async (req, res) => {
         role: user.role,
         avatar: user.avatar,
         notificationPreferences: user.notificationPreferences,
+        theme: user.theme,
       },
     });
   } catch (error) {
@@ -89,7 +90,7 @@ export const register = async (req, res) => {
     res.status(201).json({
       success: true,
       message: 'Registration successful. Please check your email for the verification code.',
-      user: { _id: user._id, name: user.name, email: user.email, role: user.role, avatar: user.avatar, notificationPreferences: user.notificationPreferences },
+      user: { _id: user._id, name: user.name, email: user.email, role: user.role, avatar: user.avatar, notificationPreferences: user.notificationPreferences, theme: user.theme },
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

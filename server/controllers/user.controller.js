@@ -109,7 +109,7 @@ export const toggleUserStatus = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
   try {
-    const { name, email, currentPassword, newPassword, notificationPreferences } = req.body;
+    const { name, email, currentPassword, newPassword, notificationPreferences, theme } = req.body;
     const user = await User.findById(req.user._id);
 
     if (!user) {
@@ -126,6 +126,7 @@ export const updateProfile = async (req, res) => {
     }
 
     if (name) user.name = name;
+    if (theme) user.theme = theme;
 
     if (notificationPreferences) {
       user.notificationPreferences = { ...user.notificationPreferences, ...notificationPreferences };

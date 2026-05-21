@@ -10,7 +10,7 @@ function Modal({ onClose, children }) {
   return (
     <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="modal-box">
-        <button onClick={onClose} style={{ float:'right', background:'none', border:'none', cursor:'pointer', color:'#64748b' }}>
+        <button onClick={onClose} style={{ float:'right', background:'none', border:'none', cursor:'pointer', color:'var(--text-muted)' }}>
           <X size={20} />
         </button>
         {children}
@@ -87,7 +87,7 @@ export default function SupervisorsPage() {
       <div style={{ marginBottom:'1.5rem', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
         <div style={{ display:'flex', alignItems:'center', gap:'0.5rem' }}>
           <Users size={20} color="#6366f1" />
-          <span style={{ color:'#94a3b8', fontSize:'0.875rem' }}>{supervisors.length} supervisor(s)</span>
+          <span style={{ color:'var(--text-muted)', fontSize:'0.875rem' }}>{supervisors.length} supervisor(s)</span>
         </div>
         <button id="add-supervisor-btn" className="btn-primary" onClick={() => setShowModal(true)}>
           <Plus size={16} /> Add Supervisor
@@ -135,10 +135,10 @@ export default function SupervisorsPage() {
                             sv.name[0].toUpperCase()
                           )}
                         </div>
-                        <span style={{ fontWeight:500, color:'#e2e8f0' }}>{sv.name}</span>
+                        <span style={{ fontWeight:500, color:'var(--text-title)' }}>{sv.name}</span>
                       </div>
                     </td>
-                    <td style={{ color:'#94a3b8' }}>{sv.email}</td>
+                    <td style={{ color:'var(--text-muted)' }}>{sv.email}</td>
                     <td>
                       {sv.project ? (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', color: '#818cf8', fontWeight: 500 }}>
@@ -154,7 +154,7 @@ export default function SupervisorsPage() {
                         {sv.isActive ? 'Active' : 'Inactive'}
                       </span>
                     </td>
-                    <td style={{ color:'#64748b' }}>{format(new Date(sv.createdAt), 'MMM d, yyyy')}</td>
+                    <td style={{ color:'var(--text-muted)' }}>{format(new Date(sv.createdAt), 'MMM d, yyyy')}</td>
                     <td>
                       <div style={{ display:'flex', gap:'0.5rem' }}>
                         <button onClick={() => handleToggle(sv._id)}
@@ -177,7 +177,7 @@ export default function SupervisorsPage() {
 
       {showModal && (
         <Modal onClose={() => setShowModal(false)}>
-          <h3 style={{ fontSize:'1.125rem', fontWeight:700, color:'#f1f5f9', marginBottom:'1.5rem' }}>Add New Supervisor</h3>
+          <h3 style={{ fontSize:'1.125rem', fontWeight:700, color:'var(--text-title)', marginBottom:'1.5rem' }}>Add New Supervisor</h3>
           <form onSubmit={handleCreate}>
             <div style={{ marginBottom:'1rem' }}>
               <label className="label">Full Name</label>
@@ -201,13 +201,13 @@ export default function SupervisorsPage() {
                 <Folder size={15} style={{ position:'absolute', left:'0.875rem', top:'50%', transform:'translateY(-50%)', color:'#475569' }} />
                 <select 
                   className="input-field" 
-                  style={{ paddingLeft:'2.5rem', background: 'rgba(15, 23, 42, 0.8)', color: '#cbd5e1' }}
+                  style={{ paddingLeft:'2.5rem' }}
                   value={form.project} 
                   onChange={e => setForm({...form, project:e.target.value})}
                 >
-                  <option value="" style={{ background: '#1e293b', color: '#cbd5e1' }}>None (No Project)</option>
+                  <option value="">None (No Project)</option>
                   {projects.map(proj => (
-                    <option key={proj._id} value={proj._id} style={{ background: '#1e293b', color: '#cbd5e1' }}>
+                    <option key={proj._id} value={proj._id}>
                       {proj.name}
                     </option>
                   ))}

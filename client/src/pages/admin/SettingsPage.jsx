@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import api from '../../services/api';
 import { Settings, Plus, Trash2, Folder, Calendar, FileText, AlertCircle, Sun, Moon } from 'lucide-react';
@@ -9,6 +10,8 @@ import { useTheme } from '../../context/ThemeContext';
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
+  const location = useLocation();
+  const activeTab = location.hash === '#theme' ? 'theme' : 'projects';
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -60,8 +63,69 @@ export default function SettingsPage() {
     }
   };
 
+  if (activeTab === 'theme') {
+    return (
+      <DashboardLayout title="Theme Settings" subtitle="Choose your preferred appearance for the system interface">
+        <div style={{ maxWidth: '600px', margin: '2rem auto' }} className="animate-slide-up">
+          {/* Theme Preferences Card */}
+          <div className="glass" style={{ borderRadius: 16, padding: '2rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
+              <Sun size={20} color="#6366f1" />
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-title)' }}>Theme Preferences</h3>
+            </div>
+            <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '1.75rem' }}>
+              Choose your preferred appearance for the system interface. Changing this will save your preference across all your devices.
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+              <button
+                type="button"
+                onClick={() => setTheme('dark')}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '1rem',
+                  padding: '1.75rem 1rem',
+                  borderRadius: 16,
+                  background: theme === 'dark' ? 'rgba(99, 102, 241, 0.15)' : 'transparent',
+                  border: theme === 'dark' ? '2px solid #6366f1' : '1px solid var(--border-color)',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  outline: 'none'
+                }}
+              >
+                <Moon size={32} color={theme === 'dark' ? '#818cf8' : 'var(--text-muted)'} />
+                <span style={{ fontSize: '0.95rem', fontWeight: 600, color: theme === 'dark' ? 'var(--text-title)' : 'var(--text-muted)' }}>Dark Mode</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setTheme('light')}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '1rem',
+                  padding: '1.75rem 1rem',
+                  borderRadius: 16,
+                  background: theme === 'light' ? 'rgba(99, 102, 241, 0.1)' : 'transparent',
+                  border: theme === 'light' ? '2px solid #6366f1' : '1px solid var(--border-color)',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  outline: 'none'
+                }}
+              >
+                <Sun size={32} color={theme === 'light' ? '#6366f1' : 'var(--text-muted)'} />
+                <span style={{ fontSize: '0.95rem', fontWeight: 600, color: theme === 'light' ? 'var(--text-title)' : 'var(--text-muted)' }}>Light Mode</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
-    <DashboardLayout title="General Settings" subtitle="Configure system options and manage projects">
+    <DashboardLayout title="Project Settings" subtitle="Configure and manage system projects">
       <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '2rem' }} className="settings-grid">
         {/* Responsive grid wrapper for Desktop */}
         <style dangerouslySetInnerHTML={{__html: `
@@ -72,7 +136,7 @@ export default function SettingsPage() {
           }
         `}} />
 
-        {/* Left Column - Add Project Form & Theme Settings */}
+        {/* Left Column - Add Project Form */}
         <div>
           <div className="glass animate-slide-up" style={{ borderRadius: 16, padding: '1.5rem', height: 'fit-content' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
@@ -107,59 +171,6 @@ export default function SettingsPage() {
                 {submitting ? <div className="spinner" /> : <><Plus size={16} /> Add Project</>}
               </button>
             </form>
-          </div>
-
-          {/* Theme Preferences Card */}
-          <div className="glass animate-slide-up" style={{ borderRadius: 16, padding: '1.5rem', height: 'fit-content', marginTop: '1.5rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.25rem' }}>
-              <Sun size={18} color="#6366f1" />
-              <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-title)' }}>Theme Preferences</h3>
-            </div>
-            <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
-              Choose your preferred appearance for the system interface.
-            </p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-              <button
-                type="button"
-                onClick={() => setTheme('dark')}
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: '0.75rem',
-                  padding: '1.25rem 1rem',
-                  borderRadius: 12,
-                  background: theme === 'dark' ? 'rgba(99, 102, 241, 0.15)' : 'transparent',
-                  border: theme === 'dark' ? '2px solid #6366f1' : '1px solid var(--border-color)',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  outline: 'none'
-                }}
-              >
-                <Moon size={24} color={theme === 'dark' ? '#818cf8' : 'var(--text-muted)'} />
-                <span style={{ fontSize: '0.875rem', fontWeight: 600, color: theme === 'dark' ? 'var(--text-title)' : 'var(--text-muted)' }}>Dark Mode</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setTheme('light')}
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: '0.75rem',
-                  padding: '1.25rem 1rem',
-                  borderRadius: 12,
-                  background: theme === 'light' ? 'rgba(99, 102, 241, 0.1)' : 'transparent',
-                  border: theme === 'light' ? '2px solid #6366f1' : '1px solid var(--border-color)',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  outline: 'none'
-                }}
-              >
-                <Sun size={24} color={theme === 'light' ? '#6366f1' : 'var(--text-muted)'} />
-                <span style={{ fontSize: '0.875rem', fontWeight: 600, color: theme === 'light' ? 'var(--text-title)' : 'var(--text-muted)' }}>Light Mode</span>
-              </button>
-            </div>
           </div>
         </div>
 

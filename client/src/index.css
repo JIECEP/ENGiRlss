@@ -532,3 +532,70 @@ tbody tr:last-child { border-bottom: none; }
 .light-mode .sidebar-link.active {
   color: var(--primary) !important;
 }
+
+/* Sidebar Submenu */
+.sidebar-item-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-submenu {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding-left: 2.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  pointer-events: none;
+}
+
+.sidebar-item-container:hover .sidebar-submenu,
+.sidebar-item-container:focus-within .sidebar-submenu {
+  max-height: 100px;
+  opacity: 1;
+  pointer-events: auto;
+  margin-bottom: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.sidebar-sublink {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-decoration: none;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  border-left: 2px solid transparent;
+}
+
+.sidebar-sublink:hover {
+  background: rgba(99, 102, 241, 0.08);
+  color: var(--text-title);
+  border-left-color: #6366f1;
+  padding-left: 1.25rem;
+}
+
+.sidebar-sublink.active {
+  background: rgba(99, 102, 241, 0.15);
+  color: #818cf8;
+  border-left-color: #818cf8;
+}
+
+/* Light Mode sublink overrides */
+.light-mode .sidebar-sublink {
+  color: var(--text-muted) !important;
+}
+.light-mode .sidebar-sublink:hover {
+  color: var(--text-title) !important;
+  background: rgba(99, 102, 241, 0.08) !important;
+}
+.light-mode .sidebar-sublink.active {
+  color: var(--primary) !important;
+  background: rgba(99, 102, 241, 0.12) !important;
+}
+

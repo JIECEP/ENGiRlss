@@ -36,7 +36,7 @@ export default function AdminTemplatesPage() {
       <div className="glass" style={{ borderRadius:16, padding:'1.5rem' }}>
         <div style={{ display:'flex', alignItems:'center', gap:'0.5rem', marginBottom:'1.25rem' }}>
           <Image size={18} color="#6366f1" />
-          <span style={{ fontWeight:600, color:'#f1f5f9' }}>All Uploaded Templates</span>
+          <span style={{ fontWeight:600, color:'var(--text-title)' }}>All Uploaded Templates</span>
           <span className="badge badge-primary" style={{ marginLeft:'0.25rem' }}>{templates.length}</span>
         </div>
 
@@ -47,14 +47,14 @@ export default function AdminTemplatesPage() {
         ) : templates.length === 0 ? (
           <div style={{ textAlign:'center', padding:'3rem', color:'#64748b' }}>
             <Image size={48} style={{ margin:'0 auto 1rem', opacity:0.3 }} />
-            <p style={{ color:'#e2e8f0', fontWeight:500 }}>No templates found</p>
-            <p style={{ fontSize:'0.875rem' }}>Supervisors have not uploaded any templates yet.</p>
+            <p style={{ color:'var(--text-main)', fontWeight:500 }}>No templates found</p>
+            <p style={{ fontSize:'0.875rem', color:'var(--text-muted)' }}>Supervisors have not uploaded any templates yet.</p>
           </div>
         ) : (
           <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(260px,1fr))', gap:'1.5rem' }}>
             {templates.map(tmpl => (
               <div key={tmpl._id} className="card-hover" style={{
-                background:'rgba(15,23,42,0.6)', border:'1px solid rgba(99,102,241,0.15)',
+                background:'var(--bg-surface)', border:'1px solid var(--border-color)',
                 borderRadius:12, overflow:'hidden', display:'flex', flexDirection:'column'
               }}>
                 <div style={{ height:180, overflow:'hidden', background:'#0f172a', position:'relative' }}>
@@ -71,7 +71,7 @@ export default function AdminTemplatesPage() {
                 </div>
                 
                 <div style={{ padding:'1rem', flex:1, display:'flex', flexDirection:'column' }}>
-                  <div style={{ fontWeight:600, color:'#e2e8f0', fontSize:'0.9375rem', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', marginBottom:'0.5rem' }}>
+                  <div style={{ fontWeight:600, color:'var(--text-title)', fontSize:'0.9375rem', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', marginBottom:'0.5rem' }}>
                     {tmpl.originalName}
                   </div>
                   
@@ -80,10 +80,10 @@ export default function AdminTemplatesPage() {
                       <User size={12} color="white" />
                     </div>
                     <div style={{ flex:1, minWidth:0 }}>
-                      <div style={{ fontSize:'0.75rem', fontWeight:600, color:'#94a3b8', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
+                      <div style={{ fontSize:'0.75rem', fontWeight:600, color:'var(--text-muted)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
                         {tmpl.uploadedBy?.name || 'Unknown User'}
                       </div>
-                      <div style={{ fontSize:'0.7rem', color:'#64748b' }}>
+                      <div style={{ fontSize:'0.7rem', color:'var(--text-muted)' }}>
                         {format(new Date(tmpl.createdAt), 'MMM d, yyyy')}
                       </div>
                     </div>

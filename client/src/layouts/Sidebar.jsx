@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard, CalendarDays, Image, FileText, Users, Mail,
@@ -12,7 +12,15 @@ const adminLinks = [
   { to: '/admin/certificates', icon: Image, label: 'Certificates' },
   { to: '/supervisor/email-templates', icon: Mail, label: 'Email Templates' },
   { to: '/admin/repository', icon: Award, label: 'Repository' },
-  { to: '/admin/settings', icon: Settings, label: 'Settings' },
+  {
+    to: '/admin/settings',
+    icon: Settings,
+    label: 'Settings',
+    sublinks: [
+      { to: '/admin/settings#projects', label: 'Project Settings' },
+      { to: '/admin/settings#theme', label: 'Theme Settings' },
+    ]
+  },
 ];
 
 const supervisorLinks = [
@@ -26,6 +34,7 @@ const supervisorLinks = [
 export default function Sidebar() {
   const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [open, setOpen] = useState(false);
   const links = isAdmin ? adminLinks : supervisorLinks;
 
@@ -103,17 +112,52 @@ export default function Sidebar() {
           <div style={{ padding: '0 0.75rem 0.5rem', fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
             Navigation
           </div>
-          {links.map(({ to, icon: Icon, label }) => (
-            <NavLink
-              key={to}
-              to={to}
-              className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
-              onClick={() => setOpen(false)}
-            >
-              <Icon size={18} />
-              <span>{label}</span>
-            </NavLink>
-          ))}
+          {links.map(({ to, icon: Icon, label, sublinks }) => {
+            const isParentActive = location.pathname === to;
+            return (
+              <div key={to} className="sidebar-item-container">
+                {sublinks ? (
+                  <div
+                    className={`sidebar-link ${isParentActive ? 'active' : ''}`}
+                    style={{ cursor: 'default' }}
+                  >
+                    <Icon size={18} />
+                    <span>{label}</span>
+                  </div>
+                ) : (
+                  <NavLink
+                    to={to}
+                    className={() => `sidebar-link ${isParentActive ? 'active' : ''}`}
+                    onClick={() => setOpen(false)}
+                  >
+                    <Icon size={18} />
+                    <span>{label}</span>
+                  </NavLink>
+                )}
+                {sublinks && (
+                  <div className="sidebar-submenu">
+                    {sublinks.map((sub) => {
+                      const subPath = sub.to.split('#')[0];
+                      const subHash = '#' + sub.to.split('#')[1];
+                      const isSubActive =
+                        location.pathname === subPath &&
+                        (location.hash === subHash || (subHash === '#projects' && !location.hash));
+                      return (
+                        <NavLink
+                          key={sub.to}
+                          to={sub.to}
+                          className={`sidebar-sublink ${isSubActive ? 'active' : ''}`}
+                          onClick={() => setOpen(false)}
+                        >
+                          <span>{sub.label}</span>
+                        </NavLink>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </nav>
 
       </aside>

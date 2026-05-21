@@ -144,14 +144,14 @@ export default function CertificatesGeneratorPage() {
             
             {/* Step 1: Upload CSV */}
             <div className="glass" style={{ borderRadius:16, padding:'1.5rem' }}>
-              <h3 style={{ fontSize:'1.125rem', fontWeight:700, color:'#f1f5f9', marginBottom:'1rem' }}>
+              <h3 style={{ fontSize:'1.125rem', fontWeight:700, color:'var(--text-title)', marginBottom:'1rem' }}>
                 1. Upload Participants List
               </h3>
               <div {...getRootProps()} className={`dropzone ${isDragActive ? 'active' : ''}`}>
                 <input {...getInputProps()} />
                 <Upload size={32} color="#6366f1" style={{ margin:'0 auto 1rem', opacity:0.8 }} />
-                <p style={{ color:'#e2e8f0', fontWeight:500 }}>Drop your CSV or Excel file here</p>
-                <p style={{ color:'#64748b', fontSize:'0.8125rem', marginTop:'0.25rem' }}>
+                <p style={{ color:'var(--text-main)', fontWeight:500 }}>Drop your CSV or Excel file here</p>
+                <p style={{ color:'var(--text-muted)', fontSize:'0.8125rem', marginTop:'0.25rem' }}>
                   Must contain "Name" and "Email" columns
                 </p>
               </div>
@@ -159,7 +159,7 @@ export default function CertificatesGeneratorPage() {
               {participants.length > 0 && (
                 <div style={{ marginTop:'1.5rem' }}>
                   <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'0.75rem' }}>
-                    <span style={{ fontSize:'0.875rem', fontWeight:600, color:'#e2e8f0' }}>Preview ({participants.length} rows)</span>
+                    <span style={{ fontSize:'0.875rem', fontWeight:600, color:'var(--text-title)' }}>Preview ({participants.length} rows)</span>
                   </div>
                   <div className="table-container" style={{ maxHeight: 250 }}>
                     <table>
@@ -189,16 +189,16 @@ export default function CertificatesGeneratorPage() {
                     return (
                       <div key={tmpl._id} className="card-hover" onClick={() => setSelectedEmailTemplate(tmpl)}
                         style={{
-                          background: selected ? 'rgba(99,102,241,0.12)' : 'rgba(15,23,42,0.6)',
-                          border: selected ? '2px solid #6366f1' : '1px solid rgba(99,102,241,0.15)',
+                          background: selected ? 'rgba(99,102,241,0.12)' : 'var(--bg-surface)',
+                          border: selected ? '2px solid #6366f1' : '1px solid var(--border-color)',
                           borderRadius: 12, padding: '1rem', cursor: 'pointer',
                           display:'flex', justifyContent:'space-between', alignItems:'center'
                         }}>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontWeight: 600, color: '#e2e8f0', fontSize: '0.875rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <div style={{ fontWeight: 600, color: 'var(--text-title)', fontSize: '0.875rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {tmpl.name}
                           </div>
-                          <div style={{ color: '#64748b', fontSize: '0.75rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             Subject: {tmpl.subject}
                           </div>
                         </div>
@@ -229,14 +229,14 @@ export default function CertificatesGeneratorPage() {
               {generatedIds.length > 0 && (
                 <div style={{ marginTop:'1rem', padding:'1rem', background:'rgba(16,185,129,0.1)', borderRadius:10, border:'1px solid rgba(16,185,129,0.2)', display:'flex', alignItems:'center', gap:'0.75rem' }}>
                   <CheckCircle size={20} color="#10b981" />
-                  <span style={{ color:'#e2e8f0', fontSize:'0.875rem' }}>Successfully generated {generatedIds.length} PDFs.</span>
+                  <span style={{ color:'var(--text-main)', fontSize:'0.875rem' }}>Successfully generated {generatedIds.length} PDFs.</span>
                 </div>
               )}
               
               {sentCount > 0 && (
                 <div style={{ marginTop:'0.75rem', padding:'1rem', background:'rgba(59,130,246,0.1)', borderRadius:10, border:'1px solid rgba(59,130,246,0.2)', display:'flex', alignItems:'center', gap:'0.75rem' }}>
                   <CheckCircle size={20} color="#3b82f6" />
-                  <span style={{ color:'#e2e8f0', fontSize:'0.875rem' }}>Successfully dispatched {sentCount} emails.</span>
+                  <span style={{ color:'var(--text-main)', fontSize:'0.875rem' }}>Successfully dispatched {sentCount} emails.</span>
                 </div>
               )}
             </div>
@@ -245,12 +245,12 @@ export default function CertificatesGeneratorPage() {
 
           {/* Right sidebar: Template Info */}
           <div className="glass" style={{ borderRadius:16, padding:'1.5rem', position:'sticky', top:'1.5rem' }}>
-            <h4 style={{ fontSize:'0.875rem', fontWeight:700, color:'#94a3b8', textTransform:'uppercase', letterSpacing:'0.05em', marginBottom:'1rem' }}>Selected Template</h4>
+            <h4 style={{ fontSize:'0.875rem', fontWeight:700, color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.05em', marginBottom:'1rem' }}>Selected Template</h4>
             <div style={{ background:'#0f172a', borderRadius:10, overflow:'hidden', marginBottom:'1rem' }}>
               <img src={`/uploads/templates/${selectedTemplate.filename}`} alt="Template" style={{ width:'100%', display:'block' }} />
             </div>
-            <div style={{ fontSize:'0.875rem', color:'#e2e8f0', fontWeight:600, wordBreak:'break-all' }}>{selectedTemplate.originalName}</div>
-            <div style={{ fontSize:'0.75rem', color:'#64748b', marginTop:'0.25rem' }}>Font: {selectedTemplate.fontFamily} ({selectedTemplate.fontSize}pt)</div>
+            <div style={{ fontSize:'0.875rem', color:'var(--text-title)', fontWeight:600, wordBreak:'break-all' }}>{selectedTemplate.originalName}</div>
+            <div style={{ fontSize:'0.75rem', color:'var(--text-muted)', marginTop:'0.25rem' }}>Font: {selectedTemplate.fontFamily} ({selectedTemplate.fontSize}pt)</div>
           </div>
         </div>
       </DashboardLayout>
@@ -262,7 +262,7 @@ export default function CertificatesGeneratorPage() {
       <div className="glass" style={{ borderRadius:16, padding:'1.5rem' }}>
         <div style={{ display:'flex', alignItems:'center', gap:'0.5rem', marginBottom:'1.25rem' }}>
           <ImageIcon size={18} color="#6366f1" />
-          <span style={{ fontWeight:600, color:'#f1f5f9' }}>Available Templates</span>
+          <span style={{ fontWeight:600, color:'var(--text-title)' }}>Available Templates</span>
         </div>
 
         {loading ? (
@@ -272,14 +272,14 @@ export default function CertificatesGeneratorPage() {
         ) : templates.length === 0 ? (
           <div style={{ textAlign:'center', padding:'3rem', color:'#64748b' }}>
             <ImageIcon size={48} style={{ margin:'0 auto 1rem', opacity:0.3 }} />
-            <p style={{ color:'#e2e8f0', fontWeight:500 }}>No templates found</p>
-            <p style={{ fontSize:'0.875rem' }}>Please upload a template in the Templates tab first.</p>
+            <p style={{ color:'var(--text-main)', fontWeight:500 }}>No templates found</p>
+            <p style={{ fontSize:'0.875rem', color:'var(--text-muted)' }}>Please upload a template in the Templates tab first.</p>
           </div>
         ) : (
           <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(240px,1fr))', gap:'1.25rem' }}>
             {templates.map(tmpl => (
               <div key={tmpl._id} className="card-hover" style={{
-                background:'rgba(15,23,42,0.6)', border:'1px solid rgba(99,102,241,0.15)',
+                background:'var(--bg-surface)', border:'1px solid var(--border-color)',
                 borderRadius:12, overflow:'hidden', cursor:'pointer'
               }} onClick={() => setSelectedTemplate(tmpl)}>
                 <div style={{ height:160, overflow:'hidden', background:'#0f172a' }}>
@@ -291,7 +291,7 @@ export default function CertificatesGeneratorPage() {
                   />
                 </div>
                 <div style={{ padding:'1rem', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-                  <div style={{ fontWeight:600, color:'#e2e8f0', fontSize:'0.875rem', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+                  <div style={{ fontWeight:600, color:'var(--text-title)', fontSize:'0.875rem', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
                     {tmpl.originalName}
                   </div>
                   <button className="btn-primary" style={{ padding:'0.375rem 0.75rem', fontSize:'0.75rem', flexShrink:0 }}>

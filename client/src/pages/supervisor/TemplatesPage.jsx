@@ -17,13 +17,13 @@ function TemplatePreviewModal({ template, onClose }) {
   return (
     <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
       <div style={{
-        background:'#1e293b', borderRadius:16, padding:'1.5rem',
+        background:'var(--bg-surface)', borderRadius:16, padding:'1.5rem',
         maxWidth:800, width:'100%', maxHeight:'90vh', overflowY:'auto',
-        border:'1px solid rgba(99,102,241,0.2)', animation:'slideUp 0.25s ease'
+        border:'1px solid var(--border-color)', animation:'slideUp 0.25s ease'
       }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'1rem' }}>
-          <h3 style={{ fontWeight:700, color:'#f1f5f9' }}>{template.originalName}</h3>
-          <button onClick={onClose} style={{ background:'none', border:'none', cursor:'pointer', color:'#64748b' }}><X size={20} /></button>
+          <h3 style={{ fontWeight:700, color:'var(--text-title)' }}>{template.originalName}</h3>
+          <button onClick={onClose} style={{ background:'none', border:'none', cursor:'pointer', color:'var(--text-muted)' }}><X size={20} /></button>
         </div>
         <div style={{ position:'relative', display:'block', width:'100%', background:'#0f172a', borderRadius:10, overflow:'hidden' }}>
           <img
@@ -98,8 +98,8 @@ function UploadModal({ file, onClose, onUpload, uploading }) {
     <div className="modal-overlay">
       <div className="modal-box" style={{ maxWidth: 900 }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'1rem' }}>
-          <h3 style={{ fontWeight:700, color:'#f1f5f9' }}>Configure Template</h3>
-          <button onClick={onClose} style={{ background:'none', border:'none', cursor:'pointer', color:'#64748b' }} disabled={uploading}><X size={20} /></button>
+          <h3 style={{ fontWeight:700, color:'var(--text-title)' }}>Configure Template</h3>
+          <button onClick={onClose} style={{ background:'none', border:'none', cursor:'pointer', color:'var(--text-muted)' }} disabled={uploading}><X size={20} /></button>
         </div>
 
         <div style={{ display:'flex', gap:'1rem', marginBottom:'1rem', flexWrap:'wrap' }}>
@@ -120,7 +120,7 @@ function UploadModal({ file, onClose, onUpload, uploading }) {
           </div>
         </div>
 
-        <p style={{ color:'#94a3b8', fontSize:'0.8125rem', marginBottom:'0.75rem' }}>
+        <p style={{ color:'var(--text-muted)', fontSize:'0.8125rem', marginBottom:'0.75rem' }}>
           <strong>Drag the text</strong> to precisely position where the participant's name will appear.
         </p>
 
@@ -226,22 +226,22 @@ export default function TemplatesPage() {
       <div className="glass" style={{ borderRadius:16, padding:'1.5rem', marginBottom:'1.5rem' }}>
         <div style={{ display:'flex', alignItems:'center', gap:'0.5rem', marginBottom:'1.25rem' }}>
           <Upload size={18} color="#6366f1" />
-          <span style={{ fontWeight:600, color:'#f1f5f9' }}>Upload New Template</span>
+          <span style={{ fontWeight:600, color:'var(--text-title)' }}>Upload New Template</span>
         </div>
         <div {...getRootProps()} className={`dropzone ${isDragActive ? 'active' : ''}`} id="template-dropzone">
           <input {...getInputProps()} />
           {uploading ? (
             <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:'0.75rem' }}>
               <div className="spinner" style={{ width:32, height:32, borderWidth:3 }} />
-              <span style={{ color:'#94a3b8', fontSize:'0.875rem' }}>Uploading template...</span>
+              <span style={{ color:'var(--text-muted)', fontSize:'0.875rem' }}>Uploading template...</span>
             </div>
           ) : (
             <>
               <FileImage size={40} color="#6366f1" style={{ margin:'0 auto 1rem', opacity:0.7 }} />
-              <p style={{ color:'#e2e8f0', fontWeight:500, marginBottom:'0.375rem' }}>
+              <p style={{ color:'var(--text-main)', fontWeight:500, marginBottom:'0.375rem' }}>
                 {isDragActive ? 'Drop the template here...' : 'Drag & drop a certificate template'}
               </p>
-              <p style={{ color:'#64748b', fontSize:'0.8125rem' }}>or click to browse — PNG, JPG up to 10MB</p>
+              <p style={{ color:'var(--text-muted)', fontSize:'0.8125rem' }}>or click to browse — PNG, JPG up to 10MB</p>
             </>
           )}
         </div>
@@ -251,7 +251,7 @@ export default function TemplatesPage() {
       <div className="glass" style={{ borderRadius:16, padding:'1.5rem' }}>
         <div style={{ display:'flex', alignItems:'center', gap:'0.5rem', marginBottom:'1.25rem' }}>
           <Image size={18} color="#6366f1" />
-          <span style={{ fontWeight:600, color:'#f1f5f9' }}>Uploaded Templates</span>
+          <span style={{ fontWeight:600, color:'var(--text-title)' }}>Uploaded Templates</span>
           <span className="badge badge-primary" style={{ marginLeft:'0.25rem' }}>{templates.length}</span>
         </div>
 
@@ -268,7 +268,7 @@ export default function TemplatesPage() {
           <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(240px,1fr))', gap:'1rem' }}>
             {templates.map(tmpl => (
               <div key={tmpl._id} className="card-hover" style={{
-                background:'rgba(15,23,42,0.6)', border:'1px solid rgba(99,102,241,0.15)',
+                background:'var(--bg-surface)', border:'1px solid var(--border-color)',
                 borderRadius:12, overflow:'hidden'
               }}>
                 <div style={{ height:160, overflow:'hidden', background:'#0f172a', position:'relative' }}>
@@ -292,13 +292,13 @@ export default function TemplatesPage() {
                   </div>
                 </div>
                 <div style={{ padding:'0.875rem' }}>
-                  <div style={{ fontWeight:500, color:'#e2e8f0', fontSize:'0.875rem', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', marginBottom:'0.375rem' }}>
+                  <div style={{ fontWeight:500, color:'var(--text-title)', fontSize:'0.875rem', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', marginBottom:'0.375rem' }}>
                     {tmpl.originalName}
                   </div>
-                  <div style={{ fontSize:'0.75rem', color:'#94a3b8', marginBottom:'0.5rem' }}>
-                    By: <span style={{ fontWeight:500, color:'#f1f5f9' }}>{tmpl.uploadedBy?.name || 'System'}</span>
+                  <div style={{ fontSize:'0.75rem', color:'var(--text-muted)', marginBottom:'0.5rem' }}>
+                    By: <span style={{ fontWeight:500, color:'var(--text-title)' }}>{tmpl.uploadedBy?.name || 'System'}</span>
                   </div>
-                  <div style={{ fontSize:'0.75rem', color:'#64748b', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                  <div style={{ fontSize:'0.75rem', color:'var(--text-muted)', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
                     <span>{format(new Date(tmpl.createdAt), 'MMM d, yyyy')}</span>
                       <button className="btn-danger" style={{ padding:'0.375rem 0.75rem', fontSize:'0.75rem' }}
                         onClick={() => setTemplateToDelete(tmpl)}>

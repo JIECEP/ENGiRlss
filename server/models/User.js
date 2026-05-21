@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema({
   role: { type: String, enum: ['admin', 'supervisor'], default: 'supervisor' },
   isActive: { type: Boolean, default: true },
   avatar: { type: String },
+  theme: { type: String, enum: ['light', 'dark'], default: 'dark' },
   project: { type: mongoose.Schema.Types.ObjectId, ref: 'Project', default: null },
   notificationPreferences: {
     emailOnComplete: { type: Boolean, default: true },

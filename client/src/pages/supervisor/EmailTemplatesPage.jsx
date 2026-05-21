@@ -13,16 +13,16 @@ function EmailPreviewModal({ template, onClose }) {
   return (
     <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
       <div style={{
-        background:'#1e293b', borderRadius:16, padding:'1.5rem',
+        background:'var(--bg-surface)', borderRadius:16, padding:'1.5rem',
         maxWidth:600, width:'100%', maxHeight:'90vh', overflowY:'auto',
-        border:'1px solid rgba(99,102,241,0.2)', animation:'slideUp 0.25s ease'
+        border:'1px solid var(--border-color)', animation:'slideUp 0.25s ease'
       }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'1rem' }}>
           <div>
-            <h3 style={{ fontWeight:700, color:'#f1f5f9' }}>{template.name}</h3>
-            <div style={{ color:'#64748b', fontSize:'0.875rem' }}>Subject: {template.subject}</div>
+            <h3 style={{ fontWeight:700, color:'var(--text-title)' }}>{template.name}</h3>
+            <div style={{ color:'var(--text-muted)', fontSize:'0.875rem' }}>Subject: {template.subject}</div>
           </div>
-          <button onClick={onClose} style={{ background:'none', border:'none', cursor:'pointer', color:'#64748b' }}><X size={20} /></button>
+          <button onClick={onClose} style={{ background:'none', border:'none', cursor:'pointer', color:'var(--text-muted)' }}><X size={20} /></button>
         </div>
         <div style={{ background:'#fff', color:'#000', padding:'1.5rem', borderRadius:8, marginTop:'1rem' }}
           dangerouslySetInnerHTML={{ __html: typeof template.body === 'string' ? template.body : '' }} />
@@ -41,8 +41,8 @@ function ConfigModal({ template, onClose, onSave, saving }) {
     <div className="modal-overlay">
       <div className="modal-box" style={{ maxWidth: 700 }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'1rem' }}>
-          <h3 style={{ fontWeight:700, color:'#f1f5f9' }}>{template?._id ? 'Edit Template' : 'Create Email Template'}</h3>
-          <button onClick={onClose} style={{ background:'none', border:'none', cursor:'pointer', color:'#64748b' }}><X size={20} /></button>
+          <h3 style={{ fontWeight:700, color:'var(--text-title)' }}>{template?._id ? 'Edit Template' : 'Create Email Template'}</h3>
+          <button onClick={onClose} style={{ background:'none', border:'none', cursor:'pointer', color:'var(--text-muted)' }}><X size={20} /></button>
         </div>
 
         <div style={{ display:'grid', gap:'1.25rem' }}>
@@ -174,10 +174,10 @@ export default function EmailTemplatesPage() {
         }}>
           <input {...getInputProps()} />
           <Upload size={40} color="#6366f1" style={{ margin: '0 auto 1rem', opacity: 0.7 }} />
-          <p style={{ color: '#e2e8f0', fontWeight: 500 }}>
+          <p style={{ color: 'var(--text-main)', fontWeight: 500 }}>
             {isDragActive ? 'Drop the file here' : 'Drag & drop an email template (.html or .txt) here, or click to browse'}
           </p>
-          <p style={{ color: '#64748b', fontSize: '0.875rem', marginTop: '0.5rem' }}>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginTop: '0.5rem' }}>
             Supports HTML and plain text files
           </p>
         </div>
@@ -190,7 +190,7 @@ export default function EmailTemplatesPage() {
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'1.25rem' }}>
           <div style={{ display:'flex', alignItems:'center', gap:'0.5rem' }}>
             <Mail size={18} color="#6366f1" />
-            <span style={{ fontWeight:600, color:'#f1f5f9' }}>Email Templates</span>
+            <span style={{ fontWeight:600, color:'var(--text-title)' }}>Email Templates</span>
             <span className="badge badge-primary" style={{ marginLeft:'0.25rem' }}>{templates.length}</span>
           </div>
           <button className="btn-primary" onClick={() => setEditingTemplate({ name: '', subject: '', body: '' })}>
@@ -211,27 +211,27 @@ export default function EmailTemplatesPage() {
           <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))', gap:'1rem' }}>
             {templates.map(tmpl => (
               <div key={tmpl._id} className="card-hover" style={{
-                background:'rgba(15,23,42,0.6)', border:'1px solid rgba(99,102,241,0.15)',
+                background:'var(--bg-surface)', border:'1px solid var(--border-color)',
                 borderRadius:12, padding:'1.25rem', display:'flex', flexDirection:'column', justifyContent:'space-between'
               }}>
                 <div>
                   <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:'0.5rem' }}>
-                    <h4 style={{ fontWeight:600, color:'#e2e8f0', fontSize:'1rem' }}>{tmpl.name || 'No Name'}</h4>
+                    <h4 style={{ fontWeight:600, color:'var(--text-title)', fontSize:'1rem' }}>{tmpl.name || 'No Name'}</h4>
                     <div style={{ display:'flex', gap:'0.5rem' }}>
-                      <button style={{ background:'none', border:'none', cursor:'pointer', color:'#64748b' }} onClick={() => setEditingTemplate(tmpl)}><Edit size={16} /></button>
+                      <button style={{ background:'none', border:'none', cursor:'pointer', color:'var(--text-muted)' }} onClick={() => setEditingTemplate(tmpl)}><Edit size={16} /></button>
                       <button style={{ background:'none', border:'none', cursor:'pointer', color:'#ef4444' }} onClick={() => setTemplateToDelete(tmpl)}><Trash2 size={16} /></button>
                     </div>
                   </div>
-                  <div style={{ color:'#94a3b8', fontSize:'0.8125rem', marginBottom:'0.5rem' }}><strong>Subject:</strong> {tmpl.subject || 'No Subject'}</div>
+                  <div style={{ color:'var(--text-muted)', fontSize:'0.8125rem', marginBottom:'0.5rem' }}><strong>Subject:</strong> {tmpl.subject || 'No Subject'}</div>
                   {tmpl.createdBy && (
-                    <div style={{ color:'#94a3b8', fontSize:'0.8125rem', marginBottom:'0.5rem' }}><strong>Created By:</strong> {tmpl.createdBy.name || 'System'}</div>
+                    <div style={{ color:'var(--text-muted)', fontSize:'0.8125rem', marginBottom:'0.5rem' }}><strong>Created By:</strong> {tmpl.createdBy.name || 'System'}</div>
                   )}
-                  <div style={{ color:'#64748b', fontSize:'0.8125rem', maxHeight:60, overflow:'hidden', textOverflow:'ellipsis' }}>
+                  <div style={{ color:'var(--text-muted)', fontSize:'0.8125rem', maxHeight:60, overflow:'hidden', textOverflow:'ellipsis' }}>
                     {(tmpl.body || '').replace(/<[^>]*>?/gm, '').substring(0, 100)}...
                   </div>
                 </div>
                 <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:'1rem' }}>
-                  <div style={{ fontSize:'0.75rem', color:'#475569' }}>
+                  <div style={{ fontSize:'0.75rem', color:'var(--text-muted)' }}>
                     {format(new Date(tmpl.createdAt), 'MMM d, yyyy')}
                   </div>
                   <button className="btn-secondary" style={{ padding:'0.375rem 0.75rem', fontSize:'0.75rem' }}

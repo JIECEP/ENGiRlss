@@ -89,8 +89,8 @@ export default function CertificatesPage() {
               <s.icon size={18} color="white" />
             </div>
             <div>
-              <div style={{ fontSize:'1.375rem', fontWeight:800, color:'#f1f5f9' }}>{s.value}</div>
-              <div style={{ fontSize:'0.75rem', color:'#64748b' }}>{s.label}</div>
+              <div style={{ fontSize:'1.375rem', fontWeight:800, color:'var(--text-title)' }}>{s.value}</div>
+              <div style={{ fontSize:'0.75rem', color:'var(--text-muted)' }}>{s.label}</div>
             </div>
           </div>
         ))}
@@ -105,8 +105,8 @@ export default function CertificatesPage() {
         ) : filteredCerts.length === 0 ? (
           <div style={{ padding:'3rem', textAlign:'center', color:'#64748b' }}>
             <Award size={48} style={{ margin:'0 auto 1rem', opacity:0.3 }} />
-            <p style={{ fontSize:'0.9375rem', color:'#e2e8f0', marginBottom:'0.5rem' }}>No certificates found</p>
-            <p style={{ fontSize:'0.8125rem' }}>Generate certificates from the Events page.</p>
+            <p style={{ fontSize:'0.9375rem', color:'var(--text-main)', marginBottom:'0.5rem' }}>No certificates found</p>
+            <p style={{ fontSize:'0.8125rem', color:'var(--text-muted)' }}>Generate certificates from the Events page.</p>
           </div>
         ) : (
           <div className="table-container" style={{ border:'none', borderRadius:0 }}>
@@ -132,16 +132,16 @@ export default function CertificatesPage() {
                           fontWeight:700, fontSize:'0.75rem', color:'white'
                         }}>{cert.participantId?.fullName?.[0]?.toUpperCase() || '?'}</div>
                         <div>
-                          <div style={{ fontWeight:500, color:'#e2e8f0', fontSize:'0.875rem' }}>{cert.participantId?.fullName || 'N/A'}</div>
-                          <div style={{ fontSize:'0.75rem', color:'#64748b' }}>{cert.participantId?.email}</div>
+                          <div style={{ fontWeight:500, color:'var(--text-title)', fontSize:'0.875rem' }}>{cert.participantId?.fullName || 'N/A'}</div>
+                          <div style={{ fontSize:'0.75rem', color:'var(--text-muted)' }}>{cert.participantId?.email}</div>
                         </div>
                       </div>
                     </td>
                     <td>
-                      <div style={{ fontWeight:500, color:'#e2e8f0', fontSize:'0.875rem' }}>{cert.eventId?.title || 'N/A'}</div>
-                      <div style={{ fontSize:'0.75rem', color:'#64748b' }}>{cert.eventId?.organizer}</div>
+                      <div style={{ fontWeight:500, color:'var(--text-title)', fontSize:'0.875rem' }}>{cert.eventId?.title || 'N/A'}</div>
+                      <div style={{ fontSize:'0.75rem', color:'var(--text-muted)' }}>{cert.eventId?.organizer}</div>
                     </td>
-                    <td style={{ color:'#64748b', fontSize:'0.8125rem' }}>
+                    <td style={{ color:'var(--text-muted)', fontSize:'0.8125rem' }}>
                       {format(new Date(cert.createdAt), 'MMM d, yyyy HH:mm')}
                     </td>
                     <td>
