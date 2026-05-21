@@ -517,10 +517,25 @@ tbody tr:last-child { border-bottom: none; }
 }
 
 .light-mode .btn-danger,
-.light-mode .btn-danger *,
-.light-mode button.btn-danger,
-.light-mode .badge-danger {
+.light-mode button.btn-danger {
+  background: #ef4444 !important;
   color: #ffffff !important;
+  border-color: #ef4444 !important;
+}
+.light-mode .btn-danger:hover,
+.light-mode button.btn-danger:hover {
+  background: #dc2626 !important;
+  border-color: #dc2626 !important;
+  color: #ffffff !important;
+}
+.light-mode .btn-danger * {
+  color: #ffffff !important;
+}
+
+.light-mode .badge-danger {
+  background: rgba(239, 68, 68, 0.15) !important;
+  color: #ef4444 !important;
+  border: 1px solid rgba(239, 68, 68, 0.3) !important;
 }
 
 .light-mode .sidebar-link {

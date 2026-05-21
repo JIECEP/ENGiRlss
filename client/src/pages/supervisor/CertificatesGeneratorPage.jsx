@@ -177,7 +177,7 @@ export default function CertificatesGeneratorPage() {
 
             {/* Step 1.5: Select Email Template */}
             <div className="glass" style={{ borderRadius:16, padding:'1.5rem' }}>
-              <h3 style={{ fontSize:'1.125rem', fontWeight:700, color:'#f1f5f9', marginBottom:'1rem' }}>
+              <h3 style={{ fontSize:'1.125rem', fontWeight:700, color:'var(--text-title)', marginBottom:'1rem' }}>
                 2. Select Email Template
               </h3>
               {emailTemplates.length === 0 ? (
@@ -212,7 +212,7 @@ export default function CertificatesGeneratorPage() {
 
             {/* Step 3: Actions */}
             <div className="glass" style={{ borderRadius:16, padding:'1.5rem' }}>
-              <h3 style={{ fontSize:'1.125rem', fontWeight:700, color:'#f1f5f9', marginBottom:'1rem' }}>
+              <h3 style={{ fontSize:'1.125rem', fontWeight:700, color:'var(--text-title)', marginBottom:'1rem' }}>
                 3. Process & Dispatch
               </h3>
               
@@ -250,7 +250,14 @@ export default function CertificatesGeneratorPage() {
               <img src={`/uploads/templates/${selectedTemplate.filename}`} alt="Template" style={{ width:'100%', display:'block' }} />
             </div>
             <div style={{ fontSize:'0.875rem', color:'var(--text-title)', fontWeight:600, wordBreak:'break-all' }}>{selectedTemplate.originalName}</div>
-            <div style={{ fontSize:'0.75rem', color:'var(--text-muted)', marginTop:'0.25rem' }}>Font: {selectedTemplate.fontFamily} ({selectedTemplate.fontSize}pt)</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem', marginTop: '0.5rem' }}>
+              <span className="badge badge-primary" style={{ fontSize: '0.7rem', fontWeight: 600 }}>
+                {selectedTemplate.fontFamily}
+              </span>
+              <span className="badge badge-secondary" style={{ fontSize: '0.7rem', fontWeight: 600 }}>
+                {selectedTemplate.fontSize}pt
+              </span>
+            </div>
           </div>
         </div>
       </DashboardLayout>
@@ -282,13 +289,18 @@ export default function CertificatesGeneratorPage() {
                 background:'var(--bg-surface)', border:'1px solid var(--border-color)',
                 borderRadius:12, overflow:'hidden', cursor:'pointer'
               }} onClick={() => setSelectedTemplate(tmpl)}>
-                <div style={{ height:160, overflow:'hidden', background:'#0f172a' }}>
+                <div style={{ height:160, overflow:'hidden', background:'#0f172a', position:'relative' }}>
                   <img
                     src={`/uploads/templates/${tmpl.filename}`}
                     alt={tmpl.originalName}
                     style={{ width:'100%', height:'100%', objectFit:'cover', transition:'transform 0.3s' }}
                     className="hover-scale"
                   />
+                  <div style={{ position:'absolute', top:'0.5rem', right:'0.5rem' }}>
+                    <span className="badge badge-primary" style={{ fontSize:'0.675rem', padding:'0.2rem 0.4rem', fontWeight:600 }}>
+                      {tmpl.fontFamily} - {tmpl.fontSize}pt
+                    </span>
+                  </div>
                 </div>
                 <div style={{ padding:'1rem', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
                   <div style={{ fontWeight:600, color:'var(--text-title)', fontSize:'0.875rem', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>

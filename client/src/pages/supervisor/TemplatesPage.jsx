@@ -277,10 +277,15 @@ export default function TemplatesPage() {
                     alt={tmpl.originalName}
                     style={{ width:'100%', height:'100%', objectFit:'cover' }}
                   />
+                  <div style={{ position:'absolute', top:'0.5rem', right:'0.5rem', zIndex:5 }}>
+                    <span className="badge badge-primary" style={{ fontSize:'0.675rem', padding:'0.2rem 0.4rem', fontWeight:600 }}>
+                      {tmpl.fontFamily} - {tmpl.fontSize}pt
+                    </span>
+                  </div>
                   <div style={{
                     position:'absolute', inset:0, background:'rgba(0,0,0,0)',
                     transition:'background 0.2s', display:'flex', alignItems:'center', justifyContent:'center', gap:'0.5rem',
-                    opacity:0
+                    opacity:0, zIndex:10
                   }}
                     onMouseEnter={e => { e.currentTarget.style.background='rgba(0,0,0,0.5)'; e.currentTarget.style.opacity=1; }}
                     onMouseLeave={e => { e.currentTarget.style.background='rgba(0,0,0,0)'; e.currentTarget.style.opacity=0; }}

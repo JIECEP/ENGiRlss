@@ -64,7 +64,7 @@ export default function AdminTemplatesPage() {
                     style={{ width:'100%', height:'100%', objectFit:'cover' }}
                   />
                   <div style={{ position:'absolute', top:'0.5rem', right:'0.5rem' }}>
-                    <span className="badge badge-primary" style={{ background:'rgba(15,23,42,0.8)', backdropFilter:'blur(4px)' }}>
+                    <span className="badge badge-primary" style={{ fontWeight: 600 }}>
                       {tmpl.fontFamily} - {tmpl.fontSize}pt
                     </span>
                   </div>
