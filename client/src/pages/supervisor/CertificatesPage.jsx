@@ -47,8 +47,9 @@ export default function CertificatesPage() {
   const filteredCerts = certificates.filter(c => {
     if (!search) return true;
     const s = search.toLowerCase();
-    return c.participantId?.fullName?.toLowerCase().includes(s) ||
-           c.participantId?.email?.toLowerCase().includes(s) ||
+    return (c.participantName || c.participantId?.fullName)?.toLowerCase().includes(s) ||
+           (c.participantEmail || c.participantId?.email)?.toLowerCase().includes(s) ||
+           c.code?.toLowerCase().includes(s) ||
            c.eventId?.title?.toLowerCase().includes(s);
   });
 
@@ -113,6 +114,7 @@ export default function CertificatesPage() {
             <table>
               <thead>
                 <tr>
+                  <th>Code</th>
                   <th>Participant</th>
                   <th>Event</th>
                   <th>Generated</th>
@@ -124,16 +126,21 @@ export default function CertificatesPage() {
                 {filteredCerts.map(cert => (
                   <tr key={cert._id}>
                     <td>
+                      <span style={{ fontFamily:'monospace', fontWeight:600, fontSize:'0.8125rem', color:'var(--text-title)' }}>
+                        {cert.code || 'N/A'}
+                      </span>
+                    </td>
+                    <td>
                       <div style={{ display:'flex', alignItems:'center', gap:'0.75rem' }}>
                         <div style={{
                           width:32, height:32, borderRadius:'50%', flexShrink:0,
                           background:'linear-gradient(135deg,#6366f1,#818cf8)',
                           display:'flex', alignItems:'center', justifyContent:'center',
                           fontWeight:700, fontSize:'0.75rem', color:'white'
-                        }}>{cert.participantId?.fullName?.[0]?.toUpperCase() || '?'}</div>
+                        }}>{(cert.participantName || cert.participantId?.fullName)?.[0]?.toUpperCase() || '?'}</div>
                         <div>
-                          <div style={{ fontWeight:500, color:'var(--text-title)', fontSize:'0.875rem' }}>{cert.participantId?.fullName || 'N/A'}</div>
-                          <div style={{ fontSize:'0.75rem', color:'var(--text-muted)' }}>{cert.participantId?.email}</div>
+                          <div style={{ fontWeight:500, color:'var(--text-title)', fontSize:'0.875rem' }}>{cert.participantName || cert.participantId?.fullName || 'N/A'}</div>
+                          <div style={{ fontSize:'0.75rem', color:'var(--text-muted)' }}>{cert.participantEmail || cert.participantId?.email}</div>
                         </div>
                       </div>
                     </td>

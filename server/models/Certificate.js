@@ -5,6 +5,7 @@ const certificateSchema = new mongoose.Schema({
   templateId: { type: mongoose.Schema.Types.ObjectId, ref: 'Template', required: true },
   participantName: { type: String, required: true },
   participantEmail: { type: String, required: true },
+  code: { type: String, unique: true, sparse: true },
   filename: { type: String, required: true },
   pdfPath: { type: String, required: true },
   emailSent: { type: Boolean, default: false },

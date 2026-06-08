@@ -69,6 +69,7 @@ export default function RepositoryPage() {
     const s = search.toLowerCase();
     return c.participantName?.toLowerCase().includes(s) ||
            c.participantEmail?.toLowerCase().includes(s) ||
+           c.code?.toLowerCase().includes(s) ||
            c.templateId?.originalName?.toLowerCase().includes(s);
   });
 
@@ -133,6 +134,7 @@ export default function RepositoryPage() {
             <table>
               <thead>
                 <tr>
+                  <th>Code</th>
                   <th>Participant</th>
                   <th>Template</th>
                   <th>Generated</th>
@@ -143,6 +145,11 @@ export default function RepositoryPage() {
               <tbody>
                 {filteredCerts.map(cert => (
                   <tr key={cert._id}>
+                    <td>
+                      <span style={{ fontFamily:'monospace', fontWeight:600, fontSize:'0.8125rem', color:'var(--text-title)' }}>
+                        {cert.code || 'N/A'}
+                      </span>
+                    </td>
                     <td>
                       <div style={{ display:'flex', alignItems:'center', gap:'0.75rem' }}>
                         <div style={{

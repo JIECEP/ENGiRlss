@@ -11,6 +11,26 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Pre-generate a batch of sequential codes in one DB scan
+// guarantees no repetition across ALL certificates in the system
+const generateBatchCodes = async (count) => {
+  const allCodes = await Certificate.find(
+    { code: { $regex: /^CERT-\d+$/ } },
+    { code: 1 }
+  ).lean();
+
+  let maxNum = 0;
+  for (const cert of allCodes) {
+    const num = parseInt(cert.code.replace('CERT-', ''), 10);
+    if (!isNaN(num) && num > maxNum) maxNum = num;
+  }
+
+  // Return 'count' sequential codes starting from maxNum+1
+  return Array.from({ length: count }, (_, i) =>
+    `CERT-${String(maxNum + i + 1).padStart(5, '0')}`
+  );
+};
+
 // Generate certificates from an array of participants
 export const generateCertificates = async (req, res) => {
   try {
@@ -33,7 +53,11 @@ export const generateCertificates = async (req, res) => {
     const generated = [];
     const errors = [];
 
-    for (const participant of participants) {
+    // Pre-generate all codes for this batch in one DB scan — guarantees no repetition
+    const batchCodes = await generateBatchCodes(participants.length);
+
+    for (let pIdx = 0; pIdx < participants.length; pIdx++) {
+      const participant = participants[pIdx];
       try {
         if (!participant.name || !participant.email) throw new Error('Missing name or email');
 
@@ -41,6 +65,8 @@ export const generateCertificates = async (req, res) => {
         let cert = eventId
           ? await Certificate.findOne({ participantEmail: participant.email, eventId })
           : await Certificate.findOne({ participantEmail: participant.email, templateId });
+
+        const codeToUse = batchCodes[pIdx];
 
         // Generate PDF
         const pdfDoc = await PDFDocument.create();
@@ -97,6 +123,34 @@ export const generateCertificates = async (req, res) => {
           color: rgb(0.1, 0.1, 0.1),
         });
 
+        // Draw certificate code
+        const codeFontStr = template.codeFontFamily || 'Helvetica';
+        let selectedCodeFont = StandardFonts.Helvetica;
+        if (codeFontStr === 'Times-Roman') selectedCodeFont = StandardFonts.TimesRoman;
+        else if (codeFontStr === 'Times-Bold') selectedCodeFont = StandardFonts.TimesRomanBold;
+        else if (codeFontStr === 'Helvetica-Bold') selectedCodeFont = StandardFonts.HelveticaBold;
+        else if (codeFontStr === 'Courier') selectedCodeFont = StandardFonts.Courier;
+        else if (codeFontStr === 'Courier-Bold') selectedCodeFont = StandardFonts.CourierBold;
+
+        const codeFont = await pdfDoc.embedFont(selectedCodeFont);
+        const codeFontSize = template.codeFontSize || 20;
+        const codeX = template.codeX ?? 0.5;
+        const codeY = template.codeY ?? 0.85;
+
+        const codeWidth = codeFont.widthOfTextAtSize(codeToUse, codeFontSize);
+        const codeXPos = Math.max(10, Math.min(width - codeWidth - 10, (width * codeX) - (codeWidth / 2)));
+        const codeYPos = height - (height * codeY) - (codeFontSize / 3);
+
+        console.log(`Drawing code "${codeToUse}" at x=${codeXPos.toFixed(1)}, y=${codeYPos.toFixed(1)}, size=${codeFontSize}, page height=${height}`);
+
+        page.drawText(codeToUse, {
+          x: codeXPos,
+          y: codeYPos,
+          size: codeFontSize,
+          font: codeFont,
+          color: rgb(0, 0, 0),
+        });
+
         const pdfBytes = await pdfDoc.save();
         const safeFileName = participant.name.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_');
         const filename = `${safeFileName}_Certificate_${Date.now()}.pdf`;
@@ -108,6 +162,7 @@ export const generateCertificates = async (req, res) => {
           cert.pdfPath = outputPath;
           cert.emailSent = false;
           cert.participantName = participant.name;
+          cert.code = codeToUse;
           await cert.save();
         } else {
           cert = await Certificate.create({
@@ -117,11 +172,12 @@ export const generateCertificates = async (req, res) => {
             participantEmail: participant.email,
             filename,
             pdfPath: outputPath,
+            code: codeToUse,
           });
         }
         generated.push({ id: cert._id, name: cert.participantName, email: cert.participantEmail, filename });
       } catch (err) {
-        console.error('Certificate Generation Error for', participant.name, ':', err);
+        console.error('Certificate Generation Error for', participant.name, ':', err.message, err.code || '', err.stack?.split('\n')[1] || '');
         errors.push({ name: participant.name, error: err.message });
       }
     }
@@ -268,6 +324,7 @@ export const getCertificates = async (req, res) => {
 
     let certs = await Certificate.find(filter)
       .populate({ path: 'templateId', select: 'originalName filename' })
+      .populate({ path: 'eventId', select: 'title organizer' })
       .sort({ createdAt: -1 });
 
     if (search) {
@@ -275,6 +332,7 @@ export const getCertificates = async (req, res) => {
       certs = certs.filter(c =>
         c.participantName?.toLowerCase().includes(s) ||
         c.participantEmail?.toLowerCase().includes(s) ||
+        c.code?.toLowerCase().includes(s) ||
         c.templateId?.originalName?.toLowerCase().includes(s)
       );
     }

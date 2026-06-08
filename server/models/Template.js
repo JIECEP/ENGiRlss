@@ -10,6 +10,10 @@ const templateSchema = new mongoose.Schema({
   nameY: { type: Number, default: 0.5 },
   fontSize: { type: Number, default: 42 },
   fontFamily: { type: String, default: 'Helvetica-Bold' },
+  codeX: { type: Number, default: 0.5 },
+  codeY: { type: Number, default: 0.8 },
+  codeFontSize: { type: Number, default: 16 },
+  codeFontFamily: { type: String, default: 'Helvetica' },
   uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   createdAt: { type: Date, default: Date.now },
 });

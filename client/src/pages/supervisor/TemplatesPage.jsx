@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import api from '../../services/api';
 import { useDropzone } from 'react-dropzone';
@@ -46,6 +46,21 @@ function TemplatePreviewModal({ template, onClose }) {
           }}>
             [Participant Name]
           </div>
+          <div style={{
+            position:'absolute',
+            left: `${(template.codeX || 0.5) * 100}%`,
+            top: `${(template.codeY || 0.8) * 100}%`,
+            transform: 'translate(-50%, -50%)',
+            pointerEvents: 'none',
+            color: '#333',
+            fontWeight: template.codeFontFamily?.includes('Bold') ? 'bold' : 'normal',
+            fontFamily: getCssFont(template.codeFontFamily || 'Helvetica'),
+            fontSize: `${template.codeFontSize || 16}px`,
+            whiteSpace: 'nowrap',
+            textShadow: '0 0 6px rgba(255,255,255,0.9)'
+          }}>
+            [Certificate Code]
+          </div>
         </div>
       </div>
     </div>
@@ -53,12 +68,21 @@ function TemplatePreviewModal({ template, onClose }) {
 }
 
 function UploadModal({ file, onClose, onUpload, uploading }) {
+  const [activeItem, setActiveItem] = useState('name'); // 'name' | 'code'
+  
   const [nameX, setNameX] = useState(0.5);
   const [nameY, setNameY] = useState(0.5);
-  const [fontSize, setFontSize] = useState(42);
-  const [fontFamily, setFontFamily] = useState('Helvetica-Bold');
+  const [nameFontSize, setNameFontSize] = useState(42);
+  const [nameFontFamily, setNameFontFamily] = useState('Helvetica-Bold');
+  
+  const [codeX, setCodeX] = useState(0.5);
+  const [codeY, setCodeY] = useState(0.8);
+  const [codeFontSize, setCodeFontSize] = useState(16);
+  const [codeFontFamily, setCodeFontFamily] = useState('Helvetica');
+  
   const [previewUrl, setPreviewUrl] = useState('');
-  const [isDragging, setIsDragging] = useState(false);
+  const [draggingElement, setDraggingElement] = useState(null); // 'name' | 'code' | null
+  const containerRef = useRef(null);
 
   useEffect(() => {
     const url = URL.createObjectURL(file);
@@ -66,32 +90,50 @@ function UploadModal({ file, onClose, onUpload, uploading }) {
     return () => URL.revokeObjectURL(url);
   }, [file]);
 
-  const updatePosition = (clientX, clientY, rect) => {
+  const updatePosition = (clientX, clientY, rect, elementToUpdate) => {
     let x = (clientX - rect.left) / rect.width;
     let y = (clientY - rect.top) / rect.height;
     // clamp
     x = Math.max(0, Math.min(1, x));
     y = Math.max(0, Math.min(1, y));
-    setNameX(x);
-    setNameY(y);
+    const target = elementToUpdate || activeItem;
+    if (target === 'name') {
+      setNameX(x);
+      setNameY(y);
+    } else {
+      setCodeX(x);
+      setCodeY(y);
+    }
   };
 
   const handlePointerDown = (e) => {
-    setIsDragging(true);
-    const rect = e.currentTarget.getBoundingClientRect();
-    updatePosition(e.clientX, e.clientY, rect);
-    e.currentTarget.setPointerCapture(e.pointerId);
+    const isName = e.target.closest('[data-drag="name"]');
+    const isCode = e.target.closest('[data-drag="code"]');
+    let targetElement = activeItem;
+    if (isName) {
+      targetElement = 'name';
+      setActiveItem('name');
+    } else if (isCode) {
+      targetElement = 'code';
+      setActiveItem('code');
+    }
+    setDraggingElement(targetElement);
+    const rect = containerRef.current.getBoundingClientRect();
+    updatePosition(e.clientX, e.clientY, rect, targetElement);
+    containerRef.current.setPointerCapture(e.pointerId);
   };
 
   const handlePointerMove = (e) => {
-    if (!isDragging) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    updatePosition(e.clientX, e.clientY, rect);
+    if (!draggingElement) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    updatePosition(e.clientX, e.clientY, rect, draggingElement);
   };
 
   const handlePointerUp = (e) => {
-    setIsDragging(false);
-    e.currentTarget.releasePointerCapture(e.pointerId);
+    if (draggingElement) {
+      containerRef.current.releasePointerCapture(e.pointerId);
+      setDraggingElement(null);
+    }
   };
 
   return (
@@ -102,10 +144,36 @@ function UploadModal({ file, onClose, onUpload, uploading }) {
           <button onClick={onClose} style={{ background:'none', border:'none', cursor:'pointer', color:'var(--text-muted)' }} disabled={uploading}><X size={20} /></button>
         </div>
 
+        <div style={{ display:'flex', gap:'0.5rem', marginBottom:'1rem' }}>
+          <button 
+            type="button" 
+            className={`btn-primary`} 
+            style={{ flex:1, padding:'0.625rem', fontWeight:600, background: activeItem === 'name' ? 'var(--primary-color)' : 'rgba(99,102,241,0.15)', color: activeItem === 'name' ? 'white' : 'var(--text-main)', border:'1px solid var(--border-color)', borderRadius:8 }}
+            onClick={() => setActiveItem('name')}
+          >
+            Position Participant Name
+          </button>
+          <button 
+            type="button" 
+            className={`btn-primary`} 
+            style={{ flex:1, padding:'0.625rem', fontWeight:600, background: activeItem === 'code' ? 'var(--success-color, #10b981)' : 'rgba(16,185,129,0.15)', color: activeItem === 'code' ? 'white' : 'var(--text-main)', border:'1px solid var(--border-color)', borderRadius:8 }}
+            onClick={() => setActiveItem('code')}
+          >
+            Position Certificate Code
+          </button>
+        </div>
+
         <div style={{ display:'flex', gap:'1rem', marginBottom:'1rem', flexWrap:'wrap' }}>
           <div style={{ flex:1, minWidth:200 }}>
-            <label className="label" style={{ fontSize:'0.75rem', marginBottom:'0.25rem' }}>Font Style</label>
-            <select className="input-field" value={fontFamily} onChange={e => setFontFamily(e.target.value)} style={{ padding:'0.5rem' }}>
+            <label className="label" style={{ fontSize:'0.75rem', marginBottom:'0.25rem' }}>
+              {activeItem === 'name' ? 'Name Font Style' : 'Code Font Style'}
+            </label>
+            <select 
+              className="input-field" 
+              value={activeItem === 'name' ? nameFontFamily : codeFontFamily} 
+              onChange={e => activeItem === 'name' ? setNameFontFamily(e.target.value) : setCodeFontFamily(e.target.value)} 
+              style={{ padding:'0.5rem' }}
+            >
               <option value="Helvetica-Bold">Helvetica Bold</option>
               <option value="Helvetica">Helvetica Normal</option>
               <option value="Times-Bold">Times Bold</option>
@@ -115,45 +183,85 @@ function UploadModal({ file, onClose, onUpload, uploading }) {
             </select>
           </div>
           <div style={{ flex:1, minWidth:200 }}>
-            <label className="label" style={{ fontSize:'0.75rem', marginBottom:'0.25rem' }}>Font Size ({fontSize}pt)</label>
-            <input type="range" min="16" max="120" value={fontSize} onChange={e => setFontSize(Number(e.target.value))} style={{ width:'100%', accentColor:'#6366f1' }} />
+            <label className="label" style={{ fontSize:'0.75rem', marginBottom:'0.25rem' }}>
+              {activeItem === 'name' ? `Name Font Size (${nameFontSize}pt)` : `Code Font Size (${codeFontSize}pt)`}
+            </label>
+            <input 
+              type="range" 
+              min={activeItem === 'name' ? "16" : "8"} 
+              max={activeItem === 'name' ? "120" : "48"} 
+              value={activeItem === 'name' ? nameFontSize : codeFontSize} 
+              onChange={e => activeItem === 'name' ? setNameFontSize(Number(e.target.value)) : setCodeFontSize(Number(e.target.value))} 
+              style={{ width:'100%', accentColor: activeItem === 'name' ? '#6366f1' : '#10b981' }} 
+            />
           </div>
         </div>
 
         <p style={{ color:'var(--text-muted)', fontSize:'0.8125rem', marginBottom:'0.75rem' }}>
-          <strong>Drag the text</strong> to precisely position where the participant's name will appear.
+          Click or drag anywhere on the template to place the <strong>{activeItem === 'name' ? 'Participant Name' : 'Certificate Code'}</strong>, or click the labels directly to switch elements.
         </p>
 
         <div 
-          style={{ position:'relative', display:'block', width:'100%', background:'#0f172a', borderRadius:10, overflow:'hidden', cursor: isDragging ? 'grabbing' : 'grab', touchAction:'none', userSelect:'none', WebkitUserSelect:'none', MozUserSelect:'none' }}
+          ref={containerRef}
+          style={{ position:'relative', display:'block', width:'100%', background:'#0f172a', borderRadius:10, overflow:'hidden', cursor: draggingElement ? 'grabbing' : 'grab', touchAction:'none', userSelect:'none', WebkitUserSelect:'none', MozUserSelect:'none' }}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
           onPointerCancel={handlePointerUp}
         >
           <img src={previewUrl} alt="Template Preview" style={{ width:'100%', display:'block', pointerEvents:'none' }} draggable="false" />
-          <div style={{
-            position:'absolute',
-            left: `${nameX * 100}%`,
-            top: `${nameY * 100}%`,
-            transform: 'translate(-50%, -50%)',
-            pointerEvents: 'none',
-            color: '#111',
-            fontWeight: fontFamily.includes('Bold') ? 'bold' : 'normal',
-            fontFamily: getCssFont(fontFamily),
-            fontSize: `${fontSize}px`,
-            whiteSpace: 'nowrap',
-            textShadow: '0 0 6px rgba(255,255,255,0.9)',
-            border: isDragging ? '2px dashed #6366f1' : 'none',
-            padding: '4px',
-            borderRadius: '4px'
-          }}>
+          
+          <div 
+            data-drag="name"
+            style={{
+              position:'absolute',
+              left: `${nameX * 100}%`,
+              top: `${nameY * 100}%`,
+              transform: 'translate(-50%, -50%)',
+              pointerEvents: 'auto',
+              cursor: draggingElement === 'name' ? 'grabbing' : 'grab',
+              color: '#111',
+              fontWeight: nameFontFamily.includes('Bold') ? 'bold' : 'normal',
+              fontFamily: getCssFont(nameFontFamily),
+              fontSize: `${nameFontSize}px`,
+              whiteSpace: 'nowrap',
+              textShadow: '0 0 6px rgba(255,255,255,0.9)',
+              border: activeItem === 'name' ? '2px dashed #6366f1' : '1px solid transparent',
+              padding: '4px',
+              borderRadius: '4px',
+              zIndex: activeItem === 'name' ? 10 : 2
+            }}
+          >
             [Participant Name]
+          </div>
+
+          <div 
+            data-drag="code"
+            style={{
+              position:'absolute',
+              left: `${codeX * 100}%`,
+              top: `${codeY * 100}%`,
+              transform: 'translate(-50%, -50%)',
+              pointerEvents: 'auto',
+              cursor: draggingElement === 'code' ? 'grabbing' : 'grab',
+              color: '#333',
+              fontWeight: codeFontFamily.includes('Bold') ? 'bold' : 'normal',
+              fontFamily: getCssFont(codeFontFamily),
+              fontSize: `${codeFontSize}px`,
+              whiteSpace: 'nowrap',
+              textShadow: '0 0 6px rgba(255,255,255,0.9)',
+              border: activeItem === 'code' ? '2px dashed #10b981' : '1px solid transparent',
+              padding: '4px',
+              borderRadius: '4px',
+              zIndex: activeItem === 'code' ? 10 : 2
+            }}
+          >
+            [Certificate Code]
           </div>
         </div>
         <div style={{ display:'flex', justifyContent:'flex-end', gap:'1rem', marginTop:'1.5rem' }}>
           <button className="btn-secondary" onClick={onClose} disabled={uploading}>Cancel</button>
-          <button className="btn-primary" onClick={() => onUpload(nameX, nameY, fontSize, fontFamily)} disabled={uploading}>
+          <button className="btn-primary" onClick={() => onUpload(nameX, nameY, nameFontSize, nameFontFamily, codeX, codeY, codeFontSize, codeFontFamily)} disabled={uploading}>
             {uploading ? <><div className="spinner" /> Uploading...</> : <><Upload size={16} /> Upload & Save</>}
           </button>
         </div>
@@ -185,13 +293,17 @@ export default function TemplatesPage() {
     setPendingFile(acceptedFiles[0]);
   }, []);
 
-  const handleUpload = async (nameX, nameY, fontSize, fontFamily) => {
+  const handleUpload = async (nameX, nameY, fontSize, fontFamily, codeX, codeY, codeFontSize, codeFontFamily) => {
     const formData = new FormData();
     formData.append('template', pendingFile);
     formData.append('nameX', nameX);
     formData.append('nameY', nameY);
     formData.append('fontSize', fontSize);
     formData.append('fontFamily', fontFamily);
+    formData.append('codeX', codeX);
+    formData.append('codeY', codeY);
+    formData.append('codeFontSize', codeFontSize);
+    formData.append('codeFontFamily', codeFontFamily);
     setUploading(true);
     try {
       await api.post('/templates/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } });

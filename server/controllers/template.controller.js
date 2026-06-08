@@ -8,7 +8,7 @@ export const uploadTemplate = async (req, res) => {
     if (!req.file) {
       return res.status(400).json({ success: false, message: 'No file uploaded.' });
     }
-    const { nameX, nameY, fontSize, fontFamily } = req.body;
+    const { nameX, nameY, fontSize, fontFamily, codeX, codeY, codeFontSize, codeFontFamily } = req.body;
     const template = await Template.create({
       filename: req.file.filename,
       originalName: req.file.originalname,
@@ -19,6 +19,10 @@ export const uploadTemplate = async (req, res) => {
       nameY: nameY ? parseFloat(nameY) : 0.5,
       fontSize: fontSize ? parseInt(fontSize) : 42,
       fontFamily: fontFamily || 'Helvetica-Bold',
+      codeX: codeX ? parseFloat(codeX) : 0.5,
+      codeY: codeY ? parseFloat(codeY) : 0.8,
+      codeFontSize: codeFontSize ? parseInt(codeFontSize) : 16,
+      codeFontFamily: codeFontFamily || 'Helvetica',
       uploadedBy: req.user._id,
     });
     await template.populate('uploadedBy', 'name email');
